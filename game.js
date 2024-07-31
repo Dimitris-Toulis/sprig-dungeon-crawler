@@ -17,6 +17,7 @@ const orb_invisibility = "5"
 const orb_defense = "6"
 const orb_transform = "7"
 const orb_ultimate = "8"
+const orb_names = ["Destruction","Ghost","Attack","Water","Invisibility","Defense","Transform","Ultimate"]
 
 setLegend(
   [ player, bitmap`
@@ -230,16 +231,16 @@ let whole_map = map`
 .......................................................................
 ....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...
 ....h........w.....................................................h...
-....h........w.....................................................h...
 ....h........wwwwwwwww.............................................h...
 ....h................r.............................................h...
 ....h........wwww.wwww.............................................h...
 ....h........w..w.w................................................h...
-....hwwwwwwwww.ww.ww...............................................h...
-....h..........w...w...............................................h...
+....h........w.ww.ww...............................................h...
+....hwwwwwwwww.w...w...............................................h...
 ....h..........w.1.w...............................................h...
 ....h..........w...w...............................................h...
 ....h..........wwwww...............................................h...
+....h..............................................................h...
 ....h..............................................................h...
 ....h..............................................................h...
 ....h..............................................................h...
@@ -303,11 +304,54 @@ onInput("d", () => {
 })
 
 const collectedOrbs = []
+let selectedOrb = null;
+
+function selectOrb(orb){
+  selectedOrb = orb
+  console.log(orb_names[collectedOrbs[orb]-1])
+  clearText()
+  addText(orb_names[collectedOrbs[orb]-1]+" Orb",{ 
+  x: 0,
+  y: 0,
+  color: color`3`
+})
+}
+
 afterInput(() => {
   const orb = getTile(localPlayerPos.x,localPlayerPos.y).find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
     collectedOrbs.push(parseInt(orb._type))
     whole_map = whole_map.replace(orb._type,".")
     updateMap()
+    if(selectedOrb==null) selectOrb(collectedOrbs.length-1)
   }
+})
+onInput("j",()=>{
+  selectOrb((selectedOrb+1)%collectedOrbs.length)
+})
+onInput("l",()=>{
+  selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
+})
+function useOrb(orb){
+  switch(orb){
+    case 1:
+      break;
+    case 2:
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+    case 7:
+      break;
+    case 8:
+      break;
+  }
+}
+onInput("i",()=>{
+  useOrb(collectedOrbs[selectedOrb])
 })
