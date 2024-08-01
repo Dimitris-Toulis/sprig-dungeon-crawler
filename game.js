@@ -225,8 +225,9 @@ LLLLLLLLLLLLLLLL`],
 ....99999999....
 ................`],
 )
+const destructibles = [rocks]
 
-let whole_map = map`
+let start_map = map`
 .......................................................................
 .......................................................................
 ....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...
@@ -267,16 +268,23 @@ let whole_map = map`
 ....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...
 .......................................................................
 .......................................................................`
+let rowMap = start_map.split("\n").slice(1)
 
-const playerPos = {x:7,y:5}
-const localPlayerPos = {x:5,y:3}
+const playerPos = {x:8,y:5}
+const localPlayerPos = {x:4,y:3}
 
-function updateMap(){
+function redrawMap(){
   const {x,y} = playerPos
-  const currentMap = whole_map.split("\n").slice(y-2,y+6).map(row=>row.slice(x-4,x+6))
+  const currentMap = rowMap.slice(y-3,y+5).map(row=>row.slice(x-4,x+6))
   setMap(currentMap.join("\n"))
   addSprite(localPlayerPos.x,localPlayerPos.y,player)
 }
+function editMap(x,y,sprite){
+  rowMap[y] = rowMap[y].substring(0, x) + sprite + rowMap[y].substring(x + 1)
+  console.log(rowMap,x,y)
+  redrawMap()
+}
+
 const solids = [hard_wall,wall,rocks]
 function moveOrCollide(movementX,movementY){
   if(getTile(localPlayerPos.x+movementX,localPlayerPos.y+movementY).some((sprite)=>solids.includes(sprite._type))) return
@@ -285,22 +293,22 @@ function moveOrCollide(movementX,movementY){
     playerPos.y += movementY
   }
 }
-updateMap()
+redrawMap()
 onInput("s", () => {
   moveOrCollide(0,1)
-  updateMap()
+  redrawMap()
 })
 onInput("w", () => {
   moveOrCollide(0,-1)
-  updateMap()
+  redrawMap()
 })
 onInput("a", () => {
   moveOrCollide(-1,0)
-  updateMap()
+  redrawMap()
 })
 onInput("d", () => {
   moveOrCollide(1,0)
-  updateMap()
+  redrawMap()
 })
 
 const collectedOrbs = []
@@ -321,8 +329,7 @@ afterInput(() => {
   const orb = getTile(localPlayerPos.x,localPlayerPos.y).find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
     collectedOrbs.push(parseInt(orb._type))
-    whole_map = whole_map.replace(orb._type,".")
-    updateMap()
+    editMap(playerPos.x,playerPos.y,".")
     if(selectedOrb==null) selectOrb(collectedOrbs.length-1)
   }
 })
@@ -335,6 +342,14 @@ onInput("l",()=>{
 function useOrb(orb){
   switch(orb){
     case 1:
+      for(let x = -1; x <= 1; x++){
+        for(let y = -1; y <= 1; y++){
+          const sprites = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
+          if(sprites.length == 1 && destructibles.includes(sprites[0]._type)) {
+            editMap(playerPos.x+x,playerPos.y+y,".")
+          }
+        }
+      }
       break;
     case 2:
       break;
