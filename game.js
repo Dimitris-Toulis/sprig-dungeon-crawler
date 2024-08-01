@@ -374,7 +374,7 @@ function editMap(x,y,sprite){
   redrawMap()
 }
 
-const solids = [hard_wall,wall,rocks,crate]
+const solids = [hard_wall,wall,rocks,crate,enemy_sword]
 function moveOrCollide(movementX,movementY){
   if(getTile(localPlayerPos.x+movementX,localPlayerPos.y+movementY).some((sprite)=>solids.includes(sprite._type))) return
   else {
