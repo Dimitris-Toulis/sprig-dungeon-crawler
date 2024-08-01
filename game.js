@@ -20,6 +20,7 @@ const orb_transform = "7"
 const orb_ultimate = "8"
 const orb_names = ["Destruction","Ghost","Attack","Water","Invisibility","Defense","Transform","Ultimate"]
 const lava = "l"
+const regen_lava = "e"
 const obsidian = "o"
 const enemy_sword = "s"
 
@@ -262,6 +263,23 @@ C00000000000000C
 3339993333339999
 3333999333399999
 9999999999999999`],
+  [ regen_lava, bitmap`
+9999999999999999
+9933339933999999
+9339333933933333
+9339333999933333
+9339993999939999
+9333333999999999
+9933339993333339
+9999999993333339
+9999999999999999
+9999999333399999
+9999993339339999
+9339993339339999
+3339993999339999
+3339993333339999
+3333999333399999
+9999999999999999`],
   [ obsidian, bitmap`
 0000000000000000
 0000000000000000
@@ -314,8 +332,8 @@ let start_map = map`
 ....h..........w...w...wlw.w.www.w..ww...w.w.c..ls.sl..w...........h...
 ....h..........wwwww.wwwlw.w.w.w.w..w.ww.w.w.s..ls.sl..w...........h...
 ....h................wlllw.w.wwwwwwww.ww.w.ww.rsls..l..w...........h...
-....h................wllww.ww.........w..w...l..ll.rlo7w...........h...
-....h................wllw...ww.wwwwwwwwccw.s.lwcsl..wwww...........h...
+....h................wllww.ww.........w..w...e..ll.rlo7w...........h...
+....h................wllw...ww.wwwwwwwwccw.s.ewcsl..wwww...........h...
 ....h...............wwllw......w......w..w....w..l..w..............h...
 ....h...........wwwww...w...wwww..w...w..wwwwwwwwwwww..............h...
 ....h...........w.......w...........ww...r4r..w....................h...
@@ -353,7 +371,6 @@ function redrawMap(){
 }
 function editMap(x,y,sprite){
   rowMap[y] = rowMap[y].substring(0, x) + sprite + rowMap[y].substring(x + 1)
-  console.log(rowMap,x,y)
   redrawMap()
 }
 
@@ -401,6 +418,8 @@ function selectOrb(orb){
 })
 }
 
+let lavaTimers = []
+
 afterInput(() => {
   const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
@@ -410,13 +429,18 @@ afterInput(() => {
     selectOrb(collectedOrbs.length-1)
   }
   const isLava = nextTile.some(sprite=>sprite._type==lava);
-  if(isLava && collectedOrbs[selectedOrb] == 4){
+  const isRegenLava = nextTile.some(sprite=>sprite._type==regen_lava);
+  if((isLava || isRegenLava) && collectedOrbs[selectedOrb] == 4){
     editMap(playerPos.x,playerPos.y,obsidian)
+    if(isRegenLava) lavaTimers.push({x:playerPos.x,y:playerPos.y,remaining:6})
   }
   else if(isLava){
     die("lava")
     return
   }
+  lavaTimers.forEach(timer=>timer.remaining--)
+  lavaTimers.filter(timer=>timer.remaining==0).forEach(timer=>editMap(timer.x,timer.y,regen_lava))
+  lavaTimers = lavaTimers.filter(timer=>timer.remaining!=0)
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
         const sprites = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
