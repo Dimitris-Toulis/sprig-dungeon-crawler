@@ -12,13 +12,13 @@ const rocks = "r"
 const crate = "c"
 const orb_destruction = "1"
 const orb_ghost = "2"
-const orb_attack = "3"
+const orb_fire = "3"
 const orb_water = "4"
 const orb_invisibility = "5"
 const orb_defense = "6"
 const orb_transform = "7"
 const orb_ultimate = "8"
-const orb_names = ["Destruction","Ghost","Attack","Water","Invisibility","Defense","Transform","Ultimate"]
+const orb_names = ["Destruction","Ghost","Fire","Water","Invisibility","Defense","Transform","Ultimate"]
 const lava = "l"
 const regen_lava = "e"
 const obsidian = "o"
@@ -128,7 +128,7 @@ C00000000000000C
 ...8888888888...
 ....88888888....
 ................`],
-  [ orb_attack, bitmap`
+  [ orb_fire, bitmap`
 ................
 ....33333333....
 ...3333333333...
@@ -136,8 +136,8 @@ C00000000000000C
 .33369999996333.
 .33996999969933.
 .33999699699933.
-.33999955999933.
-.33999955999933.
+.339999FF999933.
+.339999FF999933.
 .33999699699933.
 .33996999969933.
 .33369999996333.
@@ -369,7 +369,7 @@ let start_map = map`
 ....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....w..w.w.........h...
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.........h...
 ....h..........w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.........h...
-....h..........wwwww.wwwlw.w.w.w.w..w.ww.w.w.s..ls.se..t.w.........h...
+....h..........wwwww.wwwlw.w.w3w.w..w.ww.w.w.s..ls.se..t.w.........h...
 ....h................wlllw.w.wwwwwwww.ww.w.ww.rsls..e.7w.w.........h...
 ....h................wllww.ww.........w..w...e..ll.reo.www.........h...
 ....h................wllw...ww.wwwwwwwwccw.s.ewcsl..wwww...........h...
