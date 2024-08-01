@@ -20,6 +20,7 @@ const orb_transform = "7"
 const orb_ultimate = "8"
 const orb_names = ["Destruction","Ghost","Attack","Water","Invisibility","Defense","Transform","Ultimate"]
 const lava = "l"
+const obsidian = "o"
 
 setLegend(
   [ player, bitmap`
@@ -259,7 +260,24 @@ C00000000000000C
 3339993333339999
 3339993333339999
 3333999333399999
-9999999999999999`]
+9999999999999999`],
+  [ obsidian, bitmap`
+0000000000000000
+0000000000000000
+000H00000H000000
+00H00000H0000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000000000000000
+0000H0000000H000
+000H0000000H0000
+0000000000000000
+0000000000000000
+0000000000000000
+000000H000000H00
+00000H000000H000
+0000000000000000`]
 )
 const destructibles = [rocks,crate]
 
@@ -274,21 +292,21 @@ let start_map = map`
 ....h........w..w.w..wwwcwrw.www.ww.ll.........w...................h...
 ....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwww...................h...
 ....hwwwwwwwww.w...w...w.w.w.w.w.w.................................h...
-....h..........w.1.w...w.w.w.w.w.w.................................h...
-....h..........w...w...wlw.w.www.w.................................h...
-....h..........wwwww.wwwlw.w.w7w.w.................................h...
-....h................wlllw.w.wwwww.................................h...
-....h................wllww.ww......................................h...
-....h................wllw...w......................................h...
-....h...............wwllw...w......................................h...
-....h...........wwwww...w...w......................................h...
-....h...........w.......w...w......................................h...
-....h...........w...rr..w...w......................................h...
-....h...........w...5r..w...w......................................h...
-....h...........w.......w...w......................................h...
-....h...........wwwwwwwww...w......................................h...
-....h...................wwwww......................................h...
-....h..............................................................h...
+....h..........w.1.w...w.w.w.w.w.w..wwwwww.........................h...
+....h..........w...w...wlw.w.www.w..ww...w.........................h...
+....h..........wwwww.wwwlw.w.w7w.w..w.ww.w.........................h...
+....h................wlllw.w.wwwwwwww.ww.w.........................h...
+....h................wllww.ww.........w..w.........................h...
+....h................wllw...ww.wwwwwwwwccw.........................h...
+....h...............wwllw......w......w..w.........................h...
+....h...........wwwww...w...wwww..w...w..wwwwww....................h...
+....h...........w.......w...........ww...r4r..w....................h...
+....h...........w...rr..w...wwwwwwrw.wwwwwww..w....................h...
+....h...........w...5r..w.....rw..w..w.....w..w....................h...
+....h...........w.......w...wr......w......w..w....................h...
+....h...........wwwwwwwwwwwwwwwwwww.wwwwwwwwccw....................h...
+....h.............................w..oooooo..cw....................h...
+....h.............................wwwwwwwwwwwww....................h...
 ....h..............................................................h...
 ....h..............................................................h...
 ....h..............................................................h...
@@ -321,7 +339,7 @@ function editMap(x,y,sprite){
   redrawMap()
 }
 
-const solids = [hard_wall,wall,rocks]
+const solids = [hard_wall,wall,rocks,crate]
 function moveOrCollide(movementX,movementY){
   if(getTile(localPlayerPos.x+movementX,localPlayerPos.y+movementY).some((sprite)=>solids.includes(sprite._type))) return
   else {
@@ -330,49 +348,63 @@ function moveOrCollide(movementX,movementY){
   }
 }
 redrawMap()
+let freezed = false
 onInput("s", () => {
+  if(freezed) return;
   moveOrCollide(0,1)
   redrawMap()
 })
 onInput("w", () => {
+  if(freezed) return;
   moveOrCollide(0,-1)
   redrawMap()
 })
 onInput("a", () => {
+  if(freezed) return;
   moveOrCollide(-1,0)
   redrawMap()
 })
 onInput("d", () => {
+  if(freezed) return;
   moveOrCollide(1,0)
   redrawMap()
 })
 
-const collectedOrbs = []
+let collectedOrbs = []
 let selectedOrb = null;
 
 function selectOrb(orb){
   selectedOrb = orb
-  console.log(orb_names[collectedOrbs[orb]-1])
   clearText()
   addText(orb_names[collectedOrbs[orb]-1]+" Orb",{ 
-  x: 0,
-  y: 0,
-  color: color`3`
+    x: 0,
+    y: 0,
+    color: color`3`
 })
 }
 
 afterInput(() => {
-  const orb = getTile(localPlayerPos.x,localPlayerPos.y).find(sprite=>parseInt(sprite._type)<=8)
+  const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
+  const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
     collectedOrbs.push(parseInt(orb._type))
     editMap(playerPos.x,playerPos.y,".")
     if(selectedOrb==null) selectOrb(collectedOrbs.length-1)
   }
+  const isLava = nextTile.some(sprite=>sprite._type==lava);
+  if(isLava && collectedOrbs[selectedOrb] == 4){
+    editMap(playerPos.x,playerPos.y,obsidian)
+  }
+  else if(isLava){
+    die("lava")
+  }
 })
 onInput("j",()=>{
+  if(freezed) return;
   selectOrb((selectedOrb+1)%collectedOrbs.length)
 })
 onInput("l",()=>{
+  if(freezed) return;
   selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
 })
 function useOrb(orb){
@@ -391,8 +423,6 @@ function useOrb(orb){
       break;
     case 3:
       break;
-    case 4:
-      break;
     case 5:
       break;
     case 6:
@@ -404,5 +434,22 @@ function useOrb(orb){
   }
 }
 onInput("i",()=>{
+  if(freezed) return;
   useOrb(collectedOrbs[selectedOrb])
 })
+
+function die(cause){
+  addText("You died",{y:4,x:8,color:color`3`})
+  addText("From: "+cause,{y:5,x:0,color:color`7`})
+  freezed = true
+}
+onInput("k",()=>restartGame())
+function restartGame(){
+  rowMap = start_map.split("\n").slice(1)
+  collectedOrbs = []
+  selectedOrb = null;
+  playerPos.x = 8; playerPos.y = 5;
+  redrawMap()
+  clearText()
+  freezed = false
+}
