@@ -16,12 +16,15 @@ Ghost orb: Pass through normal walls, crates and rocks
 Fire orb: Turn water into smoke that disappears afterwards
 Water orb: Turn lava into obsidian to pass over it. Be careful because it leaves water and can suffocate you!
 Invisibility orb: Enemies can't see you and therefore don't kill you
-Gold orb: Use to generate gold
+Electric orb: Use to activate machines touching you. It will also kill you instantly in water if held!
 Transform orb: Turn into ghost that does not trigger traps
 Ultimate orb: Use it to win the game
 
 Regenerating lava: Turns back to lava after 5 "moves" (i,j,k,l also count)
-Crates: Drop gold when destroyed
+Machines: Activate them using the electric orb. Red machines are generally bad
+Water machine: Kills you by mixing water and electricity
+Plant machine: Spawns a plant on top of you
+Gate machine: Destroys gates and turns into smoke
 */
 
 const player = "p"
@@ -34,10 +37,10 @@ const orb_ghost = "2"
 const orb_fire = "3"
 const orb_water = "4"
 const orb_invisibility = "5"
-const orb_gold = "6"
+const orb_electric = "6"
 const orb_transform = "7"
 const orb_ultimate = "8"
-const orb_names = ["Destruction","Ghost","Fire","Water","Invisibility","Gold","Transform","Ultimate"]
+const orb_names = ["Destruction","Ghost","Fire","Water","Invisibility","Electric","Transform","Ultimate"]
 const lava = "l"
 const regen_lava = "e"
 const obsidian = "o"
@@ -46,6 +49,10 @@ const trap = "t"
 const water = "a"
 const smoke = "m"
 const plant = "n"
+const machine_water = "b"
+const machine_plant = "d"
+const gate = "g"
+const machine_gate = "f"
 
 const sprites = [
   [ wall, bitmap`
@@ -201,23 +208,23 @@ C00000000000000C
 ...1111111111...
 ....11111111....
 ................`],
-  [ orb_gold, bitmap`
-................
-....66666666....
-...6666666666...
-..666999999666..
-.666F999999F666.
-.6699F9999F9966.
-.66999F99F99966.
-.66999933999966.
-.66999933999966.
-.66999F99F99966.
-.6699F9999F9966.
-.666F999999F666.
-..666999999666..
-...6666666666...
-....66666666....
-................`],
+  [ orb_electric, bitmap`
+.6.6........6.6.
+..6.77777777.6..
+.6.7777777777.6.
+..777666666777..
+.77726666662777.
+.77662666626677.
+.77666266266677.
+.77666633666677.
+.77666633666677.
+.77666266266677.
+.77662666626677.
+.77726666662777.
+..777666666777..
+.6.7777777777.6.
+..6.77777777.6..
+.6.6........6.6.`],
   [ orb_transform, bitmap`
 ................
 ....HHHHHHHH....
@@ -387,7 +394,75 @@ LH6L.L..444...L.
 ...DD....D..D...
 ....D...........
 ................
-................` ]
+................` ],
+  [ machine_water, bitmap`
+0..............0
+.00000000000000.
+.03333333333330.
+.0............0.
+.0..77..77..770.
+.077..77..77..0.
+.0............0.
+.0..77..77..770.
+.077..77..77..0.
+.0............0.
+.0..77..77..770.
+.077..77..77..0.
+.0............0.
+.03333333333330.
+.00000000000000.
+0..............0`],
+  [ machine_plant, bitmap`
+0..............0
+.00000000000000.
+.04444444444440.
+.0............0.
+.0......3..3..0.
+.0......4.4...0.
+.0.3..3.44....0.
+.0.4.4...4....0.
+.04.44...44...0.
+.0.44.....D...0.
+.0..D....D....0.
+.0..D...D.....0.
+.0............0.
+.04444444444440.
+.00000000000000.
+0..............0`],
+  [ machine_gate, bitmap`
+0..............0
+.00000000000000.
+.07777777777770.
+.0............0.
+.0............0.
+.0.L.L.LL.L.L.0.
+.0.L.L.LL.L.L.0.
+.0.L.L.LL.L.L.0.
+.0.L.L.LL.L.L.0.
+.0.L.L.LL.L.L.0.
+.0.L.L.LL.L.L.0.
+.0............0.
+.0............0.
+.07777777777770.
+.00000000000000.
+0..............0`],
+  [ gate, bitmap`
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L
+L.L.L.L.LL.L.L.L`]
 ]
 const playerBitmap = bitmap`
 ................
@@ -486,7 +561,7 @@ function editMap(x,y,sprite){
   redrawMap()
 }
 
-const ghostSolids = [hard_wall,enemy_sword]
+const ghostSolids = [hard_wall,enemy_sword,machine_water,machine_plant,machine_gate,gate]
 const solids = [...ghostSolids,wall,rocks,crate]
 function moveOrCollide(movementX,movementY){
   const nextTile = getTile(localPlayerPos.x+movementX,localPlayerPos.y+movementY)
@@ -626,6 +701,18 @@ onInput("j",()=>{
   if(freezed) return;
   selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
 })
+machines = [{name:machine_water,action:(x,y)=>{
+  editMap(playerPos.x,playerPos.y,water)
+  die("Electricity")
+}},{name:machine_plant,action:(x,y)=>{
+  editMap(playerPos.x,playerPos.y,plant)
+}},{name:machine_gate,action:(x,y)=>{
+  editMap(x,y,smoke)
+  editMap(x,y+1,".")
+  editMap(x,y-1,".")
+  timers.push({x,y,remaining:3,after:"."})
+}}]
+
 function useOrb(orb){
   switch(orb){
     case 1:
@@ -638,15 +725,12 @@ function useOrb(orb){
         }
       }
       break;
-    case 2:
-      break;
-    case 3:
-      break;
-    case 5:
-      break;
     case 6:
-      break;
-    case 7:
+      const offsets = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]
+      offsets.forEach(({x,y})=>{
+        const tile = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
+        machines.find((m)=>m.name==tile.at(0)?._type)?.action(playerPos.x+x,playerPos.y+y)
+      })
       break;
     case 8:
       break;
