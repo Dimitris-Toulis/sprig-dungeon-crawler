@@ -595,11 +595,11 @@ afterInput(() => {
    die("Suffocation") 
   }
 })
-onInput("j",()=>{
+onInput("l",()=>{
   if(freezed) return;
   selectOrb((selectedOrb+1)%collectedOrbs.length)
 })
-onInput("l",()=>{
+onInput("j",()=>{
   if(freezed) return;
   selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
 })
