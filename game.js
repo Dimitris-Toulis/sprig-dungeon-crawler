@@ -523,7 +523,7 @@ function selectOrb(orb){
 }
 
 let timers = []
-let breath = 4
+let breath = 5
 afterInput(() => {
   if(freezed) return;
   const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
@@ -571,18 +571,26 @@ afterInput(() => {
     clearText()
     addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
     //Add orb text again
-    addText(orb_names[collectedOrbs[orb]-1]+" Orb",{ 
+    addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
       x: 0,
       y: 0,
       color: color`3`
     })
-    console.log("Breath: "+"O".repeat(breath))
   }
   else if(inWater){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
-  else breath = 4
+  else {
+    breath = 5
+    clearText()
+    //Add orb text again
+    addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
+      x: 0,
+      y: 0,
+      color: color`3`
+    })    
+  }
   if(breath == 0){
    die("Suffocation") 
   }
@@ -641,7 +649,7 @@ function restartGame(){
   freezed = false
   lavaTimers = []
   smokeTimers = []
-  breath = 4
+  breath = 5
   setLegend([ player, playerBitmap],...sprites)
   redrawMap()
 }
