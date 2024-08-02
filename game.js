@@ -25,6 +25,7 @@ const obsidian = "o"
 const enemy_sword = "s"
 const trap = "t"
 const water = "a"
+const smoke = "m"
 
 const sprites = [
   [ wall, bitmap`
@@ -332,7 +333,24 @@ LH6L.L..444...L.
 7777777775577777
 7777777777777777
 7777777777777777
-7777777777777777`]
+7777777777777777`],
+  [ smoke, bitmap`
+...1............
+..1.1......1....
+...1........1...
+..1.............
+................
+............1...
+...........11...
+............11..
+................
+.1...1..........
+..1.............
+.11......1....1.
+........1....1..
+.........1....1.
+................
+................`]
 ]
 const playerBitmap = bitmap`
 ................
@@ -380,11 +398,11 @@ let start_map = map`
 ....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...
 ....h........w.......wwwwwwwwww....t.eeee.t.eeeeeeee.t...w.........h...
 ....h........wwwwwwwwwr.......w.w..wwwwwwwwwwwwwwwwwwwww.w.hhhhhhh.h...
-....h................rr.........wwweeer..t.....w.......w.w..aaaaah.h...
-....h........wwww.wwwwr.......w....oeerr.t..s.2w.......w.w.haaaaah.h...
-....h........w..w.w..wwwcwrw.www.ww.eerr.t.....w.......w.w.haaaaah.h...
-....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwww..w.w.haaaaah.h...
-....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....w..w.w.haaaaah.h...
+....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h...
+....h........wwww.wwwwr.......w....oeerr.t..s.2waaaaaaaw.w.haaaaah.h...
+....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h...
+....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwaaw.w.haaaaah.h...
+....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h...
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h...
 ....h..........w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h...
 ....h..........wwwww.wwwlw.w.w3w.w..w.ww.w.w.s..ls.se..t.w.hhh.hhh.h...
@@ -486,9 +504,10 @@ function selectOrb(orb){
   }
 }
 
-let lavaTimers = []
-
+let timers = []
+let breath = 4
 afterInput(() => {
+  if(freezed) return;
   const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
@@ -498,21 +517,23 @@ afterInput(() => {
   }
   let isLava = nextTile.some(sprite=>sprite._type==lava);
   let isRegenLava = nextTile.some(sprite=>sprite._type==regen_lava);
-  lavaTimers.forEach(timer=>timer.remaining--)
-  lavaTimers.filter(timer=>timer.remaining==0).forEach(timer=>{
-    editMap(timer.x,timer.y,regen_lava)
-    if(timer.x == playerPos.x && timer.y == playerPos.y) isRegenLava = true
+  let inWater = nextTile.some(sprite=>sprite._type==water);
+  timers.forEach(timer=>timer.remaining--)
+  timers.filter(timer=>timer.remaining==0).forEach(timer=>{
+    editMap(timer.x,timer.y,timer.after)
+    if(timer.x == playerPos.x && timer.y == playerPos.y && timer.after == regen_lava) isRegenLava = true
   })
-  lavaTimers = lavaTimers.filter(timer=>timer.remaining!=0)
+  timers = timers.filter(timer=>timer.remaining!=0)
   if((isLava || isRegenLava) && collectedOrbs[selectedOrb] == 4){
     editMap(playerPos.x,playerPos.y,obsidian)
-    if(isRegenLava) lavaTimers.push({x:playerPos.x,y:playerPos.y,remaining:6})
+    if(isRegenLava) timers.push({x:playerPos.x,y:playerPos.y,remaining:6,after:regen_lava})
   }
   else if(isLava || isRegenLava){
     die("lava")
     return
-  } else if(collectedOrbs[selectedOrb] == 4 && nextTile.length == 1 && nextTile[0]._type == "p"){
-    editMap(playerPos.x,playerPos.y,"a")
+  } else if(collectedOrbs[selectedOrb] == 4 && nextTile.length == 1 && nextTile[0]._type == player){
+    editMap(playerPos.x,playerPos.y,water)
+    inWater = true
   }
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
@@ -526,6 +547,26 @@ afterInput(() => {
   const isTrap = nextTile.some(sprite=>sprite._type==trap)
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
+  }
+  if(inWater && collectedOrbs[selectedOrb]!=3){
+    breath--;
+    clearText()
+    addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
+    //Add orb text again
+    addText(orb_names[collectedOrbs[orb]-1]+" Orb",{ 
+      x: 0,
+      y: 0,
+      color: color`3`
+    })
+    console.log("Breath: "+"O".repeat(breath))
+  }
+  else if(inWater){
+    editMap(playerPos.x,playerPos.y,smoke)
+    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
+  }
+  else breath = 4
+  if(breath == 0){
+   die("Suffocation") 
   }
 })
 onInput("j",()=>{
@@ -569,7 +610,7 @@ onInput("i",()=>{
 
 function die(cause){
   addText("You died",{y:4,x:8,color:color`3`})
-  addText("From: "+cause,{y:5,x:0,color:color`7`})
+  addText("From: "+cause,{y:5,x:0,color:color`5`})
   freezed = true
 }
 onInput("k",()=>restartGame())
@@ -581,6 +622,8 @@ function restartGame(){
   clearText()
   freezed = false
   lavaTimers = []
+  smokeTimers = []
+  breath = 4
   setLegend([ player, playerBitmap],...sprites)
   redrawMap()
 }
