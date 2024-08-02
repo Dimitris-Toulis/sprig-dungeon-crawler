@@ -590,11 +590,13 @@ afterInput(() => {
     clearText()
     addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
     //Add orb text again
-    addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
-      x: 0,
-      y: 0,
-      color: color`3`
-    })
+    if(selectedOrb!=null){
+      addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
+        x: 0,
+        y: 0,
+        color: color`3`
+      })
+    }
   }
   else if(inWater){
     editMap(playerPos.x,playerPos.y,smoke)
@@ -604,11 +606,13 @@ afterInput(() => {
     breath = 5
     clearText()
     //Add orb text again
-    addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
-      x: 0,
-      y: 0,
-      color: color`3`
-    })    
+    if(selectedOrb!=null){
+      addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
+        x: 0,
+        y: 0,
+        color: color`3`
+      })
+    }
   }
   if(breath == 0){
    die("Suffocation") 
