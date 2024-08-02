@@ -4,6 +4,25 @@
 @tags: ['dungeon']
 @addedOn: 2024-07-31
 */
+/*
+Move with wasd
+Restart with k
+Cycle through orbs with j and l
+Use selected orb with i (if it has an action)
+
+!SPOILERS!
+Destruction orb: Use to destroy all destructible objects around you
+Ghost orb: Pass through normal walls, crates and rocks
+Fire orb: Turn water into smoke that disappears afterwards
+Water orb: Turn lava into obsidian to pass over it. Be careful because it leaves water and can suffocate you!
+Invisibility orb: Enemies can't see you and therefore don't kill you
+Gold orb: Use to generate gold
+Transform orb: Turn into ghost that does not trigger traps
+Ultimate orb: Use it to win the game
+
+Regenerating lava: Turns back to lava after 5 "moves" (i,j,k,l also count)
+Crates: Drop gold when destroyed
+*/
 
 const player = "p"
 const wall = "w"
