@@ -620,6 +620,7 @@ let timers = []
 let breath = 5
 afterInput(() => {
   if(freezed) return;
+  
   const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
@@ -627,15 +628,18 @@ afterInput(() => {
     editMap(playerPos.x,playerPos.y,".")
     selectOrb(collectedOrbs.length-1)
   }
+  
   let isLava = nextTile.some(sprite=>sprite._type==lava);
   let isRegenLava = nextTile.some(sprite=>sprite._type==regen_lava);
   let inWater = nextTile.some(sprite=>sprite._type==water);
+  
   timers.forEach(timer=>timer.remaining--)
   timers.filter(timer=>timer.remaining==0).forEach(timer=>{
     editMap(timer.x,timer.y,timer.after)
     if(timer.x == playerPos.x && timer.y == playerPos.y && timer.after == regen_lava) isRegenLava = true
   })
   timers = timers.filter(timer=>timer.remaining!=0)
+  
   if((isLava || isRegenLava) && collectedOrbs[selectedOrb] == 4){
     editMap(playerPos.x,playerPos.y,obsidian)
     if(isRegenLava) timers.push({x:playerPos.x,y:playerPos.y,remaining:6,after:regen_lava})
@@ -647,6 +651,7 @@ afterInput(() => {
     editMap(playerPos.x,playerPos.y,water)
     inWater = true
   }
+  
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
         const sprites = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
@@ -656,10 +661,18 @@ afterInput(() => {
         }
      }
   }
+  
   const isTrap = nextTile.some(sprite=>sprite._type==trap)
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
   }
+
+  const isPlant = nextTile.some(sprite=>sprite._type==plant);
+  if(isPlant && collectedOrbs[selectedOrb] == 3){
+    editMap(playerPos.x,playerPos.y,smoke)
+    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
+  }
+  
   if(inWater && collectedOrbs[selectedOrb]==3){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
