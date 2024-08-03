@@ -560,6 +560,13 @@ function editMap(x,y,sprite){
   rowMap[y] = rowMap[y].substring(0, x) + sprite + rowMap[y].substring(x + 1)
   redrawMap()
 }
+function tileIs(tile,sprite){
+  if(tile.length==1 && tile[0]._type==sprite) return true
+  else if(tile.length==2){
+    const t1 = tile[0]._type, t2 = tile[1]._type
+    return (t1==player&&t2==sprite) || (t1==sprite&&t2==player)
+  }
+}
 
 const ghostSolids = [hard_wall,enemy_sword,machine_water,machine_plant,machine_gate,gate]
 const solids = [...ghostSolids,wall,rocks,crate]
@@ -621,6 +628,12 @@ let breath = 5
 afterInput(() => {
   if(freezed) return;
   
+  timers.forEach(timer=>timer.remaining--)
+  timers.filter(timer=>timer.remaining==0).forEach(timer=>{
+    editMap(timer.x,timer.y,timer.after)
+  })
+  timers = timers.filter(timer=>timer.remaining!=0)
+
   const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
@@ -629,15 +642,8 @@ afterInput(() => {
     selectOrb(collectedOrbs.length-1)
   }
   
-  let isLava = nextTile.some(sprite=>sprite._type==lava);
-  let isRegenLava = nextTile.some(sprite=>sprite._type==regen_lava);
-  
-  timers.forEach(timer=>timer.remaining--)
-  timers.filter(timer=>timer.remaining==0).forEach(timer=>{
-    editMap(timer.x,timer.y,timer.after)
-    if(timer.x == playerPos.x && timer.y == playerPos.y && timer.after == regen_lava) isRegenLava = true
-  })
-  timers = timers.filter(timer=>timer.remaining!=0)
+  let isLava = tileIs(nextTile,lava);
+  let isRegenLava = tileIs(nextTile,regen_lava);
   
   if((isLava || isRegenLava) && collectedOrbs[selectedOrb] == 4){
     editMap(playerPos.x,playerPos.y,obsidian)
@@ -650,26 +656,26 @@ afterInput(() => {
   
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
-        const sprites = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
-        if(sprites.some(sprite=>sprite._type==enemy_sword) && collectedOrbs[selectedOrb] != 5) {
+        const tile = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
+        if(tileIs(tile,enemy_sword) && collectedOrbs[selectedOrb] != 5) {
           die("Enemy")
           return
         }
      }
   }
   
-  const isTrap = nextTile.some(sprite=>sprite._type==trap)
+  const isTrap = tileIs(nextTile,trap)
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
   }
 
-  const isPlant = nextTile.some(sprite=>sprite._type==plant);
+  const isPlant = tileIs(nextTile,plant);
   if(isPlant && collectedOrbs[selectedOrb] == 3){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
   
-  let inWater = nextTile.some(sprite=>sprite._type==water);
+  let inWater = tileIs(nextTile,water);
   if(inWater && collectedOrbs[selectedOrb] ==3 ){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
