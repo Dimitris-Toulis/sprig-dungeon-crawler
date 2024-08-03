@@ -6,7 +6,7 @@
 */
 /*
 Move with wasd
-Restart with k
+Restart with double k
 Cycle through orbs with j and l
 Use selected orb with i (if it has an action)
 
@@ -724,7 +724,7 @@ let start_map = map`
 ....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h....
 ....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h....
 ....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
-....h1234567.w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
+....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
 ....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h....
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h....
 ....hhhhhhhhhh.w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h....
@@ -831,10 +831,12 @@ function selectOrb(orb){
   setLegend([ player, playerBitmaps[collectedOrbs[orb]] ],...sprites)
 }
 
+let kcount = 0
 let timers = []
 let breath = 5
 afterInput(() => {
   if(freezed) return;
+  if(kcount>0) kcount--;
   
   timers.forEach(timer=>timer.remaining--)
   timers.filter(timer=>timer.remaining==0).forEach(timer=>{
@@ -920,6 +922,10 @@ afterInput(() => {
    die("Suffocation") 
   }
 })
+onInput("k",()=>{
+  kcount += 2
+  if(kcount == 3) restartGame()
+})
 onInput("l",()=>{
   if(freezed || collectedOrbs.length == 0) return;
   selectOrb((selectedOrb+1)%collectedOrbs.length)
@@ -976,7 +982,6 @@ function die(cause){
   addText("From: "+cause,{y:5,x:0,color:color`5`})
   freezed = true
 }
-onInput("k",()=>restartGame())
 function restartGame(){
   rowMap = start_map.split("\n").slice(1)
   collectedOrbs = []
