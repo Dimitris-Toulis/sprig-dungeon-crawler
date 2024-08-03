@@ -660,7 +660,14 @@ afterInput(() => {
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
   }
-  if(inWater && collectedOrbs[selectedOrb]!=3){
+  if(inWater && collectedOrbs[selectedOrb]==3){
+    editMap(playerPos.x,playerPos.y,smoke)
+    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
+  }
+  else if(inWater && collectedOrbs[selectedOrb] == 6){
+    die("Electricity")
+  }
+  else if(inWater){
     breath--;
     clearText()
     addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
@@ -672,10 +679,6 @@ afterInput(() => {
         color: color`3`
       })
     }
-  }
-  else if(inWater){
-    editMap(playerPos.x,playerPos.y,smoke)
-    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
   else {
     breath = 5
