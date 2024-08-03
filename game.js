@@ -829,11 +829,11 @@ afterInput(() => {
   }
 })
 onInput("l",()=>{
-  if(freezed) return;
+  if(freezed || collectedOrbs.length == 0) return;
   selectOrb((selectedOrb+1)%collectedOrbs.length)
 })
 onInput("j",()=>{
-  if(freezed) return;
+  if(freezed || collectedOrbs.length == 0) return;
   selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
 })
 machines = [{name:machine_water,action:(x,y)=>{
