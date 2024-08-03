@@ -631,7 +631,6 @@ afterInput(() => {
   
   let isLava = nextTile.some(sprite=>sprite._type==lava);
   let isRegenLava = nextTile.some(sprite=>sprite._type==regen_lava);
-  let inWater = nextTile.some(sprite=>sprite._type==water);
   
   timers.forEach(timer=>timer.remaining--)
   timers.filter(timer=>timer.remaining==0).forEach(timer=>{
@@ -647,9 +646,6 @@ afterInput(() => {
   else if(isLava || isRegenLava){
     die("lava")
     return
-  } else if(collectedOrbs[selectedOrb] == 4 && nextTile.length == 1 && nextTile[0]._type == player){
-    editMap(playerPos.x,playerPos.y,water)
-    inWater = true
   }
   
   for(let x = -1; x <= 1; x++){
@@ -673,7 +669,8 @@ afterInput(() => {
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
   
-  if(inWater && collectedOrbs[selectedOrb]==3){
+  let inWater = nextTile.some(sprite=>sprite._type==water);
+  if(inWater && collectedOrbs[selectedOrb] ==3 ){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
@@ -740,6 +737,9 @@ function useOrb(orb){
           }
         }
       }
+      break;
+    case 4:
+      editMap(playerPos.x,playerPos.y,water)
       break;
     case 6:
       const offsets = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]
