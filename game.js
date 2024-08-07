@@ -877,6 +877,7 @@ afterInput(() => {
   const isTrap = tileIs(nextTile,trap)
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
+    return
   }
 
   const isPlant = tileIs(nextTile,plant);
@@ -892,6 +893,7 @@ afterInput(() => {
   }
   else if(inWater && collectedOrbs[selectedOrb] == 6){
     die("Electricity")
+    return
   }
   else if(inWater){
     breath--;
@@ -919,7 +921,8 @@ afterInput(() => {
     }
   }
   if(breath == 0){
-   die("Suffocation") 
+    die("Suffocation")
+    return
   }
 })
 onInput("k",()=>{
