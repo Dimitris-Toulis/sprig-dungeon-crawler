@@ -949,11 +949,13 @@ afterInput(() => {
   const nextTile = getTile(localPlayerPos.x+lastMove.x,localPlayerPos.y+lastMove.y)
 
   //Proccess timers
-  timers.forEach(timer=>timer.remaining--)
-  timers.filter(timer=>timer.remaining==0).forEach(timer=>{
-    editMap(timer.x,timer.y,timer.after)
+  const newTimers = []
+  timers.forEach(timer=>{
+    timer.remaining--;
+    if(timer.remaining==0) editMap(timer.x,timer.y,timer.after)
+    else newTimers.push(timer)
   })
-  timers = timers.filter(timer=>timer.remaining!=0)
+  timers = newTimers
 
   //Collect orb
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
