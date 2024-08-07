@@ -1024,7 +1024,7 @@ afterInput(() => {
     die("Electricity")
     return
   }
-  else if(inWater){
+  else if(inWater && collectedOrbs[selectedOrb] != 8){
     breath--;
     clearText()
     addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
