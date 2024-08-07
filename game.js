@@ -823,7 +823,7 @@ setLegend(
 )
 const destructibles = [rocks,crate,plant]
 
-let start_map = map`
+const start_map = map`
 ........................................................................
 ........................................................................
 ....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh....
@@ -881,7 +881,6 @@ function redrawMap(){
 }
 function editMap(x,y,sprite){
   rowMap[y] = rowMap[y].substring(0, x) + sprite + rowMap[y].substring(x + 1)
-  redrawMap()
 }
 function tileIs(tile,sprite){
   if(tile.length==1 && tile[0]._type==sprite) return true
@@ -909,22 +908,18 @@ let freezed = false
 onInput("s", () => {
   if(freezed) return;
   moveOrCollide(0,1)
-  redrawMap()
 })
 onInput("w", () => {
   if(freezed) return;
   moveOrCollide(0,-1)
-  redrawMap()
 })
 onInput("a", () => {
   if(freezed) return;
   moveOrCollide(-1,0)
-  redrawMap()
 })
 onInput("d", () => {
   if(freezed) return;
   moveOrCollide(1,0)
-  redrawMap()
 })
 
 let collectedOrbs = []
@@ -948,7 +943,7 @@ let breath = 5
 afterInput(() => {
   if(freezed) return;
   if(kcount>0) kcount--;
-  const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
+  const nextTile = getTile(localPlayerPos.x+lastMove.x,localPlayerPos.y+lastMove.y)
 
   //Proccess timers
   timers.forEach(timer=>timer.remaining--)
@@ -993,7 +988,7 @@ afterInput(() => {
   // Die from enemies
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
-        const tile = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
+        const tile = getTile(localPlayerPos.x+lastMove.x+x,localPlayerPos.y+lastMove.y+y)
         if(tileIs(tile,enemy_sword) && collectedOrbs[selectedOrb] != 5) {
           die("Enemy")
           return
@@ -1054,6 +1049,7 @@ afterInput(() => {
     die("Suffocation")
     return
   }
+  redrawMap()
 })
 onInput("k",()=>{
   if(kcount == 1 || freezed) restartGame()
@@ -1112,6 +1108,7 @@ onInput("i",()=>{
 })
 
 function die(cause){
+  redrawMap()
   if(collectedOrbs[selectedOrb]==8) return
   addText("You died",{y:4,x:8,color:color`3`})
   addText("From: "+cause,{y:5,x:0,color:color`5`})
