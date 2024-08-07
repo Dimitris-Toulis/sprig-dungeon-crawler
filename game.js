@@ -255,20 +255,20 @@ C00000000000000C
 ................`],
   [ orb_ultimate, bitmap`
 ................
-....L0L13C75....
-...319837106F...
-..7C983710H04D..
-.65983710HL.08H.
-.F983710HD.LH09.
-.483710H4.DH01H.
-.D3710H9.4H0178.
-.8710HH.9H0173D.
-.H10H7.HH017384.
-.90H5.7H017389F.
-.H83.5H01738956.
-..D43H017389C7..
-...F601738913...
-....57C31L0L....
+....LLLLLLLL....
+...LL97365DLL...
+..LL197365DHLL..
+.LL7197365DH4LL.
+.LC7197365DH48L.
+.LC7197365DH48L.
+.LC7197365DH48L.
+.LC7197365DH48L.
+.LC7197365DH48L.
+.LC7197365DH48L.
+.LL7197365DH4LL.
+..LL197365DHLL..
+...LL97365DLL...
+....LLLLLLLL....
 ................`],
   [ lava, bitmap`
 9999999999999999
@@ -925,15 +925,18 @@ onInput("d", () => {
 let collectedOrbs = []
 let selectedOrb = null;
 
-function selectOrb(orb){
-  prevOrb = selectedOrb
-  selectedOrb = orb
-  clearText()
-  addText(orb_names[collectedOrbs[orb]-1]+" Orb",{ 
+function orbText(){
+  addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
     x: 0,
     y: 0,
     color: color`3`
   })
+}
+function selectOrb(orb){
+  prevOrb = selectedOrb
+  selectedOrb = orb
+  clearText()
+  orbText()
   setLegend([ player, playerBitmaps[collectedOrbs[orb]] ],...sprites)
 }
 
@@ -986,14 +989,16 @@ afterInput(() => {
   }
 
   // Die from enemies
-  for(let x = -1; x <= 1; x++){
-      for(let y = -1; y <= 1; y++){
-        const tile = getTile(localPlayerPos.x+lastMove.x+x,localPlayerPos.y+lastMove.y+y)
-        if(tileIs(tile,enemy_sword) && collectedOrbs[selectedOrb] != 5) {
-          die("Enemy")
-          return
-        }
-     }
+  if(collectedOrbs[selectedOrb] != 5){
+    for(let x = -1; x <= 1; x++){
+        for(let y = -1; y <= 1; y++){
+          const tile = getTile(localPlayerPos.x+lastMove.x+x,localPlayerPos.y+lastMove.y+y)
+          if(tileIs(tile,enemy_sword)) {
+            die("Enemy")
+            return
+          }
+       }
+    }    
   }
 
   // Die from traps
@@ -1024,26 +1029,12 @@ afterInput(() => {
     breath--;
     clearText()
     addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
-    //Add orb text again
-    if(selectedOrb!=null){
-      addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
-        x: 0,
-        y: 0,
-        color: color`3`
-      })
-    }
+    if(selectedOrb!=null) orbText()
   }
-  else {
+  else if(breath<5) {
     breath = 5
     clearText()
-    //Add orb text again
-    if(selectedOrb!=null){
-      addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
-        x: 0,
-        y: 0,
-        color: color`3`
-      })
-    }
+    if(selectedOrb!=null) orbText()
   }
   if(breath == 0){
     die("Suffocation")
@@ -1103,7 +1094,7 @@ function useOrb(orb){
   }
 }
 onInput("i",()=>{
-  if(freezed) return;
+  if(freezed || collectedOrbs.length == 0) return;
   useOrb(collectedOrbs[selectedOrb])
 })
 
@@ -1116,25 +1107,30 @@ function die(cause){
 }
 let winInterval = null
 function win(){
-  let winMap = map`
+  const winMap = map`
 ..p..
 .....
 BCADE
 DFBFA`
+  const winMaps = [winMap]
+  let mapI = 0
+  for(let i=1;i<6;i++){
+    winMaps[i] = winMaps[i-1].replace(/[ABCDEF]/g,m=>{
+      let nextC = m.charCodeAt(0)+1
+      if(nextC==71) nextC = 65
+      return String.fromCharCode(nextC)
+    })
+  }
   clearText()
-  setMap(winMap)
+  setMap(winMaps[0])
   freezed = true
   addText("You win!",{x:0,y:1,color:color`6`})
   addText("You win!",{x:12,y:1,color:color`6`})
   addText("Thank you for",{x:4,y:5,color:color`5`})
   addText("playing!",{x:7,y:6,color:color`5`})
   winInterval = setInterval(()=>{
-    winMap = winMap.replace(/[ABCDEF]/g,m=>{
-      let nextC = m.charCodeAt(0)+1
-      if(nextC==71) nextC = 65
-      return String.fromCharCode(nextC)
-    })
-    setMap(winMap)
+    setMap(winMaps[mapI])
+    mapI = (mapI + 1) % 6;
   },100)
 }
 function restartGame(){
@@ -1145,8 +1141,7 @@ function restartGame(){
   clearText()
   freezed = false
   kcount = 0
-  lavaTimers = []
-  smokeTimers = []
+  timers = []
   breath = 5
   clearInterval(winInterval)
   setLegend([ player, playerBitmap],...sprites)
