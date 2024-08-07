@@ -752,7 +752,7 @@ let start_map = map`
 ....hahjh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.h.......hhhhhhoooh....
 ....hah.h..h........g.ew..aaaa.......g..dgeeek...nhhhhhhhhh.g.t.lllh....
 ....hah.h..hwhhhhhhhhhhhhhhhhh....s..f...feeehhhhhhhhshshsh.f.t.lslh....
-....hah.hh...u...c...........x.......g.b.geee......k........g.tflllh....
+....hah.hh...u...c...........q.......g.b.geee......k........g.tflllh....
 ....hhhf.hhhhwhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhghhhh....
 ......hg.........unaaaaaaaaaaaaaa..tt.eeeeeeeeeeeeeeeeeeeee.....h.......
 ......hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.......
@@ -762,6 +762,7 @@ let rowMap = start_map.split("\n").slice(1)
 
 const playerPos = {x:8,y:5}
 const localPlayerPos = {x:4,y:3}
+let lastMove = {x:0,y:0}
 
 function redrawMap(){
   const {x,y} = playerPos
@@ -791,6 +792,7 @@ function moveOrCollide(movementX,movementY){
   else {
     playerPos.x += movementX
     playerPos.y += movementY
+    lastMove = {x:movementX,y:movementY}
   }
 }
 redrawMap()
@@ -837,21 +839,24 @@ let breath = 5
 afterInput(() => {
   if(freezed) return;
   if(kcount>0) kcount--;
-  
+  const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
+
+  //Proccess timers
   timers.forEach(timer=>timer.remaining--)
   timers.filter(timer=>timer.remaining==0).forEach(timer=>{
     editMap(timer.x,timer.y,timer.after)
   })
   timers = timers.filter(timer=>timer.remaining!=0)
 
-  const nextTile = getTile(localPlayerPos.x,localPlayerPos.y)
+  //Collect orb
   const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
   if(orb) {
     collectedOrbs.push(parseInt(orb._type))
     editMap(playerPos.x,playerPos.y,".")
     selectOrb(collectedOrbs.length-1)
   }
-  
+
+  // Lava functionality
   let isLava = tileIs(nextTile,lava);
   let isRegenLava = tileIs(nextTile,regen_lava);
   
@@ -864,6 +869,19 @@ afterInput(() => {
     return
   }
   
+  // Enforcing arrow functionality
+  if(tileIs(nextTile,arrow_right_enforcing) && lastMove.x == -1){
+    playerPos.x += 1
+    redrawMap()
+    return
+  }
+  if(tileIs(nextTile,arrow_left_enforcing) && lastMove.x == +1){
+    playerPos.x -= 1
+    redrawMap()
+    return
+  }
+
+  // Die from enemies
   for(let x = -1; x <= 1; x++){
       for(let y = -1; y <= 1; y++){
         const tile = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
@@ -873,19 +891,22 @@ afterInput(() => {
         }
      }
   }
-  
+
+  // Die from traps
   const isTrap = tileIs(nextTile,trap)
   if(isTrap && collectedOrbs[selectedOrb] != 7){
     die("Player trap")
     return
   }
 
+  // Burn plants
   const isPlant = tileIs(nextTile,plant);
   if(isPlant && collectedOrbs[selectedOrb] == 3){
     editMap(playerPos.x,playerPos.y,smoke)
     timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
   }
-  
+
+  // Water and breathing functionality
   let inWater = tileIs(nextTile,water);
   if(inWater && collectedOrbs[selectedOrb] ==3 ){
     editMap(playerPos.x,playerPos.y,smoke)
