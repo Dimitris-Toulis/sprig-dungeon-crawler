@@ -923,8 +923,8 @@ afterInput(() => {
   }
 })
 onInput("k",()=>{
-  kcount += 2
-  if(kcount == 3) restartGame()
+  if(kcount == 1) restartGame()
+  kcount = 2
 })
 onInput("l",()=>{
   if(freezed || collectedOrbs.length == 0) return;
@@ -989,6 +989,7 @@ function restartGame(){
   playerPos.x = 8; playerPos.y = 5;
   clearText()
   freezed = false
+  kcount = 0
   lavaTimers = []
   smokeTimers = []
   breath = 5
