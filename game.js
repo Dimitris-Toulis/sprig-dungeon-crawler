@@ -1055,7 +1055,7 @@ afterInput(() => {
   }
 })
 onInput("k",()=>{
-  if(kcount == 1) restartGame()
+  if(kcount == 1 || freezed) restartGame()
   kcount = 2
 })
 onInput("l",()=>{
@@ -1116,7 +1116,7 @@ function die(cause){
   addText("From: "+cause,{y:5,x:0,color:color`5`})
   freezed = true
 }
-const winInterval = null
+let winInterval = null
 function win(){
   let winMap = map`
 ..p..
