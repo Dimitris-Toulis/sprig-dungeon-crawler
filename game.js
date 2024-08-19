@@ -5,26 +5,28 @@
 @addedOn: 2024-07-31
 */
 /*
-Move with wasd
-Restart with double k
-Cycle through orbs with j and l
-Use selected orb with i (if it has an action)
+## Controls
+- Move with wasd  
+- Restart with double k  
+- Cycle through orbs with j and l  
+- Use selected orb with i (if it has an action)
 
-!SPOILERS!
-Destruction orb: Use to destroy all destructible objects around you
-Ghost orb: Pass through normal walls, crates and rocks
-Fire orb: Turn water into smoke that disappears afterwards
-Water orb: Turn lava into obsidian to pass over it. Be careful because it leaves water and can suffocate you!
-Invisibility orb: Enemies can't see you and therefore don't kill you
-Electric orb: Use to activate machines touching you. It will also kill you instantly in water if held!
-Transform orb: Turn into ghost that does not trigger traps
-Ultimate orb: Use it to win the game
+## Orbs
+- Destruction orb: Use it to destroy all destructible objects around you  
+- Ghost orb: Pass through normal walls, crates and rocks  
+- Fire orb: Turns water into smoke that disappears afterwards  
+- Water orb: Turns lava into obsidian to pass over it. Use it to create water
+- Invisibility orb: Enemies can't see you and therefore don't kill you
+- Electric orb: Use it to activate machines touching you. It will also kill you instantly in water if held!
+- Transform orb: Turns you into a plant that does not trigger human traps
+- Ultimate orb: Makes you immortal. Use it to win the game
 
-Regenerating lava: Turns back to lava after 5 "moves" (i,j,k,l also count)
-Machines: Activate them using the electric orb. Red machines are generally bad
-Water machine: Kills you by mixing water and electricity
-Plant machine: Spawns a plant on top of you
-Gate machine: Destroys gates and turns into smoke
+## Special tiles
+- Regenerating lava: Turns back to lava after 6 "moves" (i,j,k,l also count)
+- Machines: Activate them using the electric orb
+  - Water machine: Kills you by mixing water and electricity
+  - Plant machine: Spawns a plant on top of you
+  - Gate machine: Destroys gates and turns into smoke
 */
 
 const player = "p"
@@ -1043,6 +1045,7 @@ afterInput(() => {
     return
   }
   redrawMap()
+  lastMove = {x:0,y:0}
 })
 onInput("k",()=>{
   if(kcount == 1 || freezed) restartGame()
