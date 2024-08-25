@@ -66,6 +66,8 @@ const confetti3 = "C"
 const confetti4 = "D"
 const confetti5 = "E"
 const confetti6 = "F"
+const message_background = "G"
+const book = "H"
 
 const sprites = [
   [ wall, bitmap`
@@ -662,7 +664,41 @@ L.L.L.L..L.L.L.L`],
 ..3....3........
 8...6.....7..6..
 .......C.......3
-..4.........3...`]
+..4.........3...`],
+  [ message_background, bitmap`
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333
+3333333333333333`],
+  [ book, bitmap`
+................
+...CCCCCCCCCC...
+...C1111CCCCC...
+...CCCC11111C...
+...CCCCCCCCCC...
+...CCCCCCCCCC...
+...CCCCCCCCCC...
+...C1111CCCCC...
+...CCCC11111C...
+...CCCCCCCCCC...
+...CCCCCCCCCC...
+...CCCCCCCCCC...
+...C1111CCCCC...
+...CCCC11111C...
+...CCCCCCCCCC...
+................`]
 ]
 const playerBitmap = bitmap`
 ................
@@ -842,7 +878,7 @@ const start_map = map`
 ....haaaaaaaah.......wlllw.w.wwwwwwww.ww.w.ww.rsls..e.7w.w...h.h...h....
 ....hahhhaaaah.......wllww.ww........nw..w...e..ll.reo.www...hch...h....
 ....hah8hooooh.......wllw...ww.wwwwwwwwccw.s.ewcsl..wwww..hhhh6h...h....
-....hah.....sh......wwllw......w......w..w....w..l..w...hhh.g..h...h....
+....hah.....sh......wwllw......w.....Hw..w....w..l..w...hhh.g..h...h....
 ....hahnhghh.h..wwwww...w..nwwww..w...w..wwwwwwwwwwww.hhh...f.ah...h....
 ....hah.hf.h.h..w.......wn..........wwn..r4r..w......hh.....g.ah...h....
 ....hahnh..h.h..w...rr..w...wwwwwwrw.wwwwwww..w......hwwwwwwwhhh...h....
@@ -852,7 +888,7 @@ const start_map = map`
 ....hah.h..h.h....................w..oooooo..cw.......hh...hh......h....
 ....hah.haah.h....................wwwwwwwwwwwww........hrrrh.......h....
 ....hah.hashhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...h.......h....
-....hah.haah........g..b....j...kk.....s..eeee...g...t.....h.......h....
+....hah.haah........g..b....j...kk.....s..eeee...g...t.....h.....H.h....
 ....hah.haah........f.ewhhhhhhhhhhhhhhhhhhhhhhh..f..btd..s.h.......h....
 ....hah.h..h.....n.ng.ew........xnaaaaaaaaa.c....g...t.....h.......h....
 ....hah.h..h.ccc.n.nf.ew.hhhhhhhhhhhhhhwhhhbhahhhwhhhhhhhhhh.......h....
@@ -862,9 +898,9 @@ const start_map = map`
 ....hahjh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.h.......hhhhhhoooh....
 ....hah.h..h........g.ew..aaaa.......g..dgeeek...nhhhhhhhhh.g.t.lllh....
 ....hah.h..hwhhhhhhhhhhhhhhhhh....s..f...feeehhhhhhhhshshsh.f.t.lslh....
-....hah.hh...u...c...........q.......g.b.geee......k........g.tflllh....
+....hah.hh...u...c...........q.......g.b.geee......k......H.g.tflllh....
 ....hhhf.hhhhwhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhghhhh....
-......hg.........unaaaaaaaaaaaaaa..tt.eeeeeeeeeeeeeeeeeeeee.....h.......
+......hg.........unaaaaaaaaaaaaaa.Htt.eeeeeeeeeeeeeeeeeeeee.....h.......
 ......hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.......
 ........................................................................
 ........................................................................
@@ -942,6 +978,13 @@ function selectOrb(orb){
   setLegend([ player, playerBitmaps[collectedOrbs[orb]] ],...sprites)
 }
 
+const books = [
+  {x:37,y:16,message:["   Why do you seek","        power?"],multiple:true,time:2000},
+  {x:34,y:38,message:["   What brings you","   to these depths?"],multiple:true,time:2000},
+  {x:58,y:36,message:[" Have you come here", "     for POWER?","", " Are you sure this", " is your true goal?", "  Do not let GREED", "    consume you","", "Cbjre pbeehcgf.","", "Or pnershy"],multiple:true,time:7000},
+  {x:65,y:26,message:["    Have you been", "    corrupted by", "      the ORB?","","    Or were you", " corrupted anyways?","", "      Aikzqnqkm", "     gwcz xwemz!"],multiple:true,time:100000}
+]
+
 let kcount = 0
 let timers = []
 let breath = 5
@@ -965,6 +1008,14 @@ afterInput(() => {
     collectedOrbs.push(parseInt(orb._type))
     editMap(playerPos.x,playerPos.y,".")
     selectOrb(collectedOrbs.length-1)
+  }
+
+  //Display book
+  const isBook = tileIs(nextTile,book)
+  if(isBook) {
+    const book = books.find(({x,y})=>x==playerPos.x&&y==playerPos.y)
+    message(book.message, book.multiple, book.time)
+    return;
   }
 
   // Lava functionality
@@ -1103,6 +1154,34 @@ onInput("i",()=>{
   useOrb(collectedOrbs[selectedOrb])
 })
 
+function message(text, multiple, time){
+  clearText()
+  setMap(map`
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG
+GGGGGGGGGGGGGGG`)
+  setBackground(message_background)
+  if(!multiple) addText(text,{y:4,x:0,color:color`5`})
+  else{
+    text.forEach((t,i)=>addText(t,{x:0,color:color`5`,y:5-Math.floor(text.length/2)+i+1}))
+  }
+  if(time!=-1) {
+    setTimeout(()=>{
+      setBackground()
+      redrawMap()
+      clearText()
+    },time)
+  } else freezed = true
+}
 function die(cause){
   redrawMap()
   if(collectedOrbs[selectedOrb]==8 && cause != "Greed") return
@@ -1114,6 +1193,8 @@ let winInterval = null
 function win(){
   if(collectedOrbs.length == 9){
     die("Greed")
+    //message("You died from greed",false,-1)
+    message(["You died from greed","blabla"],true,-1)
     return
   }
   const winMap = map`
@@ -1153,6 +1234,7 @@ function restartGame(){
   timers = []
   breath = 5
   clearInterval(winInterval)
+  setBackground()
   setLegend([ player, playerBitmap],...sprites)
   redrawMap()
 }
