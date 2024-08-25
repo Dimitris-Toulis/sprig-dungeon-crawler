@@ -1,10 +1,14 @@
 # Sprig Dungeon Crawler
-A [sprig](https://sprig.hackclub.com) game where you collect orbs that grant you powers that you can use to progress in the game
+A [sprig](https://sprig.hackclub.com) game where you collect orbs that grant you powers that you can use to progress
 
-It may seem difficult and unfair but it is based on the principle of:
+It may seem unfair at some moments but it is based on the principle of:
 > You learn by dying
 
 \- Dimitris Toulis 2024
+
+**There are 3 possible endings: Normal, Greed and Happy**
+
+There is also lore and hidden messages! Try to find them!
 
 ## Controls
 - Move with WASD
@@ -24,7 +28,7 @@ List of orbs in order of collection:
 - Invisibility orb: Enemies can't see you
 - Electric orb: Use it to activate machines adjacent you. It will also kill you instantly in water if held!
 - Transform orb: Turns you into a plant that does not trigger traps
-- Ultimate orb: Makes you immortal. Use it to win the game
+- Ultimate orb: Makes you immortal. Use it to win the game?
 
 ## Special tiles
 - Lava: Kills you if you step on it
@@ -38,4 +42,5 @@ List of orbs in order of collection:
   - Plant machine: Spawns a plant on top of you
   - Gate machine: Destroys gates and turns into smoke
 - Arrow (black): Suggests a direction to go to
-- Arrow (red): Enforces a direction to go to 
+- Arrow (red): Enforces a direction to go to
+- Altar: ???
