@@ -833,8 +833,8 @@ const start_map = map`
 ....h........wwwwwwwwwr......nw.w..wwwwwwwwwwwwwwwwwwwww.w.hhhhhhh.h....
 ....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h....
 ....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h....
-....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
-....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
+....h.....8..w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
+....h12345678w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
 ....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h....
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h....
 ....hhhhhhhhhh.w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h....
@@ -1105,13 +1105,17 @@ onInput("i",()=>{
 
 function die(cause){
   redrawMap()
-  if(collectedOrbs[selectedOrb]==8) return
+  if(collectedOrbs[selectedOrb]==8 && cause != "Greed") return
   addText("You died",{y:4,x:8,color:color`3`})
   addText("From: "+cause,{y:5,x:0,color:color`5`})
   freezed = true
 }
 let winInterval = null
 function win(){
+  if(collectedOrbs.length == 9){
+    die("Greed")
+    return
+  }
   const winMap = map`
 ..p..
 .....
@@ -1129,10 +1133,10 @@ DFBFA`
   clearText()
   setMap(winMaps[0])
   freezed = true
-  addText("You win!",{x:0,y:1,color:color`6`})
-  addText("You win!",{x:12,y:1,color:color`6`})
-  addText("Thank you for",{x:4,y:5,color:color`5`})
-  addText("playing!",{x:7,y:6,color:color`5`})
+  addText("You won?",{x:0,y:1,color:color`6`})
+  addText("You won?",{x:12,y:1,color:color`6`})
+  addText("Is this what ",{x:5,y:5,color:color`5`})
+  addText("you wanted?",{x:5,y:6,color:color`5`})
   winInterval = setInterval(()=>{
     setMap(winMaps[mapI])
     mapI = (mapI + 1) % 6;
