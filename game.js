@@ -869,7 +869,7 @@ const start_map = map`
 ....h........wwwwwwwwwr......nw.w..wwwwwwwwwwwwwwwwwwwww.w.hhhhhhh.h....
 ....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h....
 ....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h....
-....h.....8..w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
+....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
 ....h12345678w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
 ....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h....
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h....
@@ -985,6 +985,17 @@ const books = [
   {x:65,y:26,message:["    Have you been", "    corrupted by", "      the ORB?","","    Or were you", " corrupted anyways?","", "      Aikzqnqkm", "     gwcz xwemz!"],multiple:true,time:100000}
 ]
 
+const orbMessages = [
+  [" The earth trembles","","  with your power!"],
+  ["The power of ghosts","","  has been granted","       to you"],
+  ["     You feel...","","        Fiery"],
+  ["       Splash","","       Sploosh"],
+  ["   Where are you?"],
+  [" Electricity flows","","    through you!"],
+  ["        WHAT?","","    I'm a plant?"],
+  ["","Is this true POWER??","","      Gwc apitt","    jm kwzzcxbml!"]
+]
+
 let kcount = 0
 let timers = []
 let breath = 5
@@ -1008,6 +1019,8 @@ afterInput(() => {
     collectedOrbs.push(parseInt(orb._type))
     editMap(playerPos.x,playerPos.y,".")
     selectOrb(collectedOrbs.length-1)
+    message(orbMessages[orb._type-1],true,7000)
+    return;
   }
 
   //Display book
@@ -1156,6 +1169,7 @@ onInput("i",()=>{
 
 function message(text, multiple, time){
   clearText()
+  freezed = true
   setMap(map`
 GGGGGGGGGGGGGGG
 GGGGGGGGGGGGGGG
@@ -1179,8 +1193,9 @@ GGGGGGGGGGGGGGG`)
       setBackground()
       redrawMap()
       clearText()
+      freezed = false
     },time)
-  } else freezed = true
+  }
 }
 function die(cause){
   redrawMap()
