@@ -44,3 +44,8 @@ List of orbs in order of collection:
 - Arrow (black): Suggests a direction to go to
 - Arrow (red): Enforces a direction to go to
 - Altar: ???
+
+## Screenshots
+![dungeon1](https://github.com/Dimitris-Toulis/sprig-dungeon-crawler/raw/main/images/screenshot1.png)
+![dungeon2](https://github.com/Dimitris-Toulis/sprig-dungeon-crawler/raw/main/images/screenshot2.png)
+![The earth trembles with your power](https://github.com/Dimitris-Toulis/sprig-dungeon-crawler/raw/main/images/screenshot3.png)
