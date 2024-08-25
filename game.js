@@ -68,6 +68,7 @@ const confetti5 = "E"
 const confetti6 = "F"
 const message_background = "G"
 const book = "H"
+const altar = "I"
 
 const sprites = [
   [ wall, bitmap`
@@ -698,7 +699,24 @@ L.L.L.L..L.L.L.L`],
 ...C1111CCCCC...
 ...CCCC11111C...
 ...CCCCCCCCCC...
-................`]
+................`],
+  [ altar, bitmap`
+00............00
+0LLLLLLLLLLLLLL0
+.L222222222222L.
+.L232222222232L.
+.L223222222322L.
+.L222322223222L.
+.L222232232222L.
+.L222226622222L.
+.L222226622222L.
+.L222232232222L.
+.L222322223222L.
+.L223222222322L.
+.L232222222232L.
+.L222222222222L.
+0LLLLLLLLLLLLLL0
+00............00`]
 ]
 const playerBitmap = bitmap`
 ................
@@ -853,6 +871,23 @@ const playerBitmaps = {
 ......D00D......
 .....DD..DD.....
 .....D....D.....
+................`,
+  9: bitmap`
+................
+................
+..000000000000..
+..011111111110..
+..015111111510..
+..011151151110..
+..011115511110..
+..000000000000..
+.......00.......
+.....5.00.5.....
+......5005......
+.......00.......
+......D00D......
+.....DD..DD.....
+.....D....D.....
 ................`
 }
 setLegend(
@@ -870,7 +905,7 @@ const start_map = map`
 ....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h....
 ....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h....
 ....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
-....h12345678w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
+....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
 ....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h....
 ....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h....
 ....hhhhhhhhhh.w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h....
@@ -892,11 +927,11 @@ const start_map = map`
 ....hah.haah........f.ewhhhhhhhhhhhhhhhhhhhhhhh..f..btd..s.h.......h....
 ....hah.h..h.....n.ng.ew........xnaaaaaaaaa.c....g...t.....h.......h....
 ....hah.h..h.ccc.n.nf.ew.hhhhhhhhhhhhhhwhhhbhahhhwhhhhhhhhhh.......h....
-....hah.h..h.csc.n.ng.ew.h.g....xlll..hlhlhhh..lh.h.............aaah....
-....hahjh..h.ccc.n.nf.ew...f....xl8l..h.hl...s.lhjh.............a8ah....
-....hahjh..h........g.ew.h.g....xlll..h.hlllllllh.h.............aaah....
-....hahjh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.h.......hhhhhhoooh....
-....hah.h..h........g.ew..aaaa.......g..dgeeek...nhhhhhhhhh.g.t.lllh....
+....hah.h..h.csc.n.ng.ew.h.g....xlll..hlhlhhh..lh.h........u....aaah....
+....hahjh..h.ccc.n.nf.ew...f....xl8l..h.hl...s.lhjh....I..jj....a8ah....
+....hahjh..h........g.ew.h.g....xlll..h.hlllllllh.h........u....aaah....
+....hahjh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.hhhhhhhhhhhhhhoooh....
+....hah.h..h........g.ew..aaaa.......g..dgeeek...nhhh.h.h.h.g.t.lllh....
 ....hah.h..hwhhhhhhhhhhhhhhhhh....s..f...feeehhhhhhhhshshsh.f.t.lslh....
 ....hah.hh...u...c...........q.......g.b.geee......k......H.g.tflllh....
 ....hhhf.hhhhwhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhghhhh....
@@ -982,7 +1017,7 @@ const books = [
   {x:37,y:16,message:["   Why do you seek","        power?"],multiple:true,time:2000},
   {x:34,y:38,message:["   What brings you","   to these depths?"],multiple:true,time:2000},
   {x:58,y:36,message:[" Have you come here", "     for POWER?","", " Are you sure this", " is your true goal?", "  Do not let GREED", "    consume you","", "Cbjre pbeehcgf.","", "Or pnershy"],multiple:true,time:7000},
-  {x:65,y:26,message:["    Have you been", "    corrupted by", "      the ORB?","","    Or were you", " corrupted anyways?","", "      Aikzqnqkm", "     gwcz xwemz!"],multiple:true,time:100000}
+  {x:65,y:26,message:["    Have you been", "    corrupted by", "      the ORB?","","    Or were you", " corrupted anyways?","", "      Aikzqnqkm", "     gwcz xwemz!"],multiple:true,time:7000}
 ]
 
 const orbMessages = [
@@ -993,7 +1028,8 @@ const orbMessages = [
   ["   Where are you?"],
   [" Electricity flows","","    through you!"],
   ["        WHAT?","","    I'm a plant?"],
-  ["","Is this true POWER??","","      Gwc apitt","    jm kwzzcxbml!"]
+  ["","Is this true POWER??","","      Gwc apitt","    jm kwzzcxbml!"],
+  ["","","   So much POWER!!","","","     Erfvfg gur","     pbeehcgvba!"]
 ]
 
 let kcount = 0
@@ -1019,7 +1055,12 @@ afterInput(() => {
     collectedOrbs.push(parseInt(orb._type))
     editMap(playerPos.x,playerPos.y,".")
     selectOrb(collectedOrbs.length-1)
-    message(orbMessages[orb._type-1],true,7000)
+    if(collectedOrbs.length == 9){
+      message(orbMessages[8],true,2000)
+      return
+    }
+    
+    message(orbMessages[orb._type-1],true,2000)
     return;
   }
 
@@ -1108,6 +1149,19 @@ afterInput(() => {
     die("Suffocation")
     return
   }
+
+  if(tileIs(nextTile,altar)){
+    message(["      The altar","","      destroys","","      all power"],true,2000)
+    editMap(playerPos.x,playerPos.y,".")
+    collectedOrbs = []
+    selectedOrb = null
+    setLegend([ player, playerBitmaps[9] ],...sprites)
+    setTimeout(()=>{
+      win(true)
+    },3000)
+    return
+  }
+  
   redrawMap()
   lastMove = {x:0,y:0}
 })
@@ -1158,7 +1212,7 @@ function useOrb(orb){
       })
       break;
     case 8:
-      win()
+      win(false)
       break;
   }
 }
@@ -1193,6 +1247,7 @@ GGGGGGGGGGGGGGG`)
       setBackground()
       redrawMap()
       clearText()
+      orbText()
       freezed = false
     },time)
   }
@@ -1205,11 +1260,10 @@ function die(cause){
   freezed = true
 }
 let winInterval = null
-function win(){
+function win(real){
   if(collectedOrbs.length == 9){
     die("Greed")
-    //message("You died from greed",false,-1)
-    message(["You died from greed","blabla"],true,-1)
+    message("You died from greed",false,-1)
     return
   }
   const winMap = map`
@@ -1229,10 +1283,17 @@ DFBFA`
   clearText()
   setMap(winMaps[0])
   freezed = true
-  addText("You won?",{x:0,y:1,color:color`6`})
-  addText("You won?",{x:12,y:1,color:color`6`})
-  addText("Is this what ",{x:5,y:5,color:color`5`})
-  addText("you wanted?",{x:5,y:6,color:color`5`})
+  if(!real){
+    addText("You won?",{x:0,y:1,color:color`6`})
+    addText("You won?",{x:12,y:1,color:color`6`})
+    addText("Is this what ",{x:5,y:5,color:color`5`})
+    addText("you wanted?",{x:5,y:6,color:color`5`})
+  } else {
+    addText("You won!",{x:0,y:1,color:color`6`})
+    addText("You won!",{x:12,y:1,color:color`6`})
+    addText("Thank you for",{x:4,y:5,color:color`5`})
+    addText("playing!",{x:7,y:6,color:color`5`})
+  }
   winInterval = setInterval(()=>{
     setMap(winMaps[mapI])
     mapI = (mapI + 1) % 6;
