@@ -1,10 +1,12 @@
 /*
 @title: Orb Dungeon
+@description: Orb Dungeon is an adventure game where players navigate a dungeon using powers from collected orbs. Each orb grants a unique ability like destroying objects or becoming invisible that helps pass obstacles like rocks, lava, and enemies. There are 3 possible endings that are hinted to by the lore books.
 @author: Dimitris Toulis
-@tags: ['dungeon']
-@addedOn: 2024-07-31
+@tags: ['adventure']
+@addedOn: 2024-08-15
 */
 /*
+
 **There are 3 possible endings: Normal, Greed and Happy**
 
 There is also lore and hidden messages! Try to find them!
@@ -21,25 +23,25 @@ Passive effects are enabled when holding the orb and active effects are used by 
 
 List of orbs in order of collection:
 - Destruction orb: Use it to destroy all destructible objects around you  
-- Ghost orb: Pass through normal (grey) walls, crates and rocks  
-- Fire orb: Turns water into smoke that disappears afterwards  
 - Water orb: Turns lava into obsidian, allowing you to pass over it. Use it to create water
 - Invisibility orb: Enemies can't see you
-- Electric orb: Use it to activate machines adjacent you. It will also kill you instantly in water if held!
 - Transform orb: Turns you into a plant that does not trigger traps
+- Ghost orb: Pass through normal (grey) walls, crates and rocks  
+- Fire orb: Turns water into smoke that disappears afterwards  
+- Electric orb: Use it to activate machines adjacent you. It will also kill you instantly in water if held!
 - Ultimate orb: Makes you immortal. Use it to win the game?
 
 ## Special tiles
 - Lava: Kills you if you step on it
-- Regenerating lava: Turns back to lava after 6 "moves" (all buttons count) if turned into obsidian
+- Regenerating lava: Turns back to lava after 4 "moves" (all buttons count) if turned into obsidian
 - Water: Breathing mechanic (4 points of breath). Breath is deducted for moving in water. Getting out restores your breath
 - Enemy: Kills you if they see you on a neighboring tile (diagonals also)
-- Trap: Kills players (So if you are not a player you don't die)
-- Smoke: Disappears after 2 moves. Produced by water+fire orb and gate machines
+- Trap: Kills players (but not plants)
+- Smoke: Disappears after 2 moves. Produced when removing water with the fire orb and by gate machines
 - Machines: Activate them using the electric orb
+  - Gate machine: Destroys gates and turns into smoke
   - Water machine: Kills you by mixing water and electricity
   - Plant machine: Spawns a plant on top of you
-  - Gate machine: Destroys gates and turns into smoke
 - Arrow (black): Suggests a direction to go to
 - Arrow (red): Enforces a direction to go to
 - Altar: ???
@@ -59,11 +61,11 @@ const orb_invisibility = "5"
 const orb_electric = "6"
 const orb_transform = "7"
 const orb_ultimate = "8"
-const orb_names = ["Destruction","Ghost","Fire","Water","Invisibility","Electric","Transformation","Ultimate"]
+const orb_names = ["Destruction", "Ghost", "Fire", "Water", "Invisibility", "Electric", "Transformation", "Ultimate"]
 const lava = "l"
 const regen_lava = "e"
 const obsidian = "o"
-const enemy_sword = "s"
+const enemy = "s"
 const trap = "t"
 const water = "a"
 const smoke = "m"
@@ -75,6 +77,7 @@ const machine_gate = "f"
 const no = "j"
 const arrow_right = "k"
 const arrow_left = "q"
+const arrow_up = "v"
 const arrow_right_enforcing = "u"
 const arrow_left_enforcing = "x"
 const confetti1 = "A"
@@ -88,7 +91,7 @@ const book = "H"
 const altar = "I"
 
 const sprites = [
-  [ wall, bitmap`
+  [wall, bitmap`
 LLLLLLLLLLLLLLLL
 L11111111111111L
 L1LLLLLLLLLLLL1L
@@ -105,7 +108,7 @@ L1LLLLLLLLLLLL1L
 L1LLLLLLLLLLLL1L
 L11111111111111L
 LLLLLLLLLLLLLLLL`],
-  [ hard_wall, bitmap`
+  [hard_wall, bitmap`
 0000000000000000
 0LLLLLLLLLLLLLL0
 0L000000000000L0
@@ -122,7 +125,7 @@ LLLLLLLLLLLLLLLL`],
 0L000000000000L0
 0LLLLLLLLLLLLLL0
 0000000000000000`],
-  [ rocks, bitmap`
+  [rocks, bitmap`
 ................
 ...000..........
 ...000.....LLLL.
@@ -139,7 +142,7 @@ LLLLLLLLLLLLLLLL`],
 ..LLLLL..111111.
 ..LLLL......1111
 ..LLL...........`],
-  [ crate, bitmap`
+  [crate, bitmap`
 0CCCCCCCCCCCCCC0
 C00000000000000C
 C0C0C0C00C0C0C0C
@@ -156,7 +159,7 @@ C0C0C0C00C0C0C0C
 C0C0C0C00C0C0C0C
 C00000000000000C
 0CCCCCCCCCCCCCC0`],
-  [ orb_destruction, bitmap`
+  [orb_destruction, bitmap`
 ................
 ....99999999....
 ...9999999999...
@@ -173,7 +176,7 @@ C00000000000000C
 ...9999999999...
 ....99999999....
 ................`],
-  [ orb_ghost, bitmap`
+  [orb_ghost, bitmap`
 ................
 ....88888888....
 ...8888888888...
@@ -190,7 +193,7 @@ C00000000000000C
 ...8888888888...
 ....88888888....
 ................`],
-  [ orb_fire, bitmap`
+  [orb_fire, bitmap`
 ................
 ....33333333....
 ...3333333333...
@@ -206,8 +209,8 @@ C00000000000000C
 ..333999999333..
 ...3333333333...
 ....33333333....
-................`], 
-  [ orb_water, bitmap`
+................`],
+  [orb_water, bitmap`
 ................
 ....77777777....
 ...7777777777...
@@ -224,7 +227,7 @@ C00000000000000C
 ...7777777777...
 ....77777777....
 ................`],
-  [ orb_invisibility, bitmap`
+  [orb_invisibility, bitmap`
 ................
 ....11111111....
 ...1111111111...
@@ -241,7 +244,7 @@ C00000000000000C
 ...1111111111...
 ....11111111....
 ................`],
-  [ orb_electric, bitmap`
+  [orb_electric, bitmap`
 .6.6........6.6.
 ..6.77777777.6..
 .6.7777777777.6.
@@ -258,7 +261,7 @@ C00000000000000C
 .6.7777777777.6.
 ..6.77777777.6..
 .6.6........6.6.`],
-  [ orb_transform, bitmap`
+  [orb_transform, bitmap`
 ................
 ....HHHHHHHH....
 ...HHHHHHHHHH...
@@ -275,7 +278,7 @@ C00000000000000C
 ...HHHHHHHHHH...
 ....HHHHHHHH....
 ................`],
-  [ orb_ultimate, bitmap`
+  [orb_ultimate, bitmap`
 ................
 ....LLLLLLLL....
 ...LL97365DLL...
@@ -292,7 +295,7 @@ C00000000000000C
 ...LL97365DLL...
 ....LLLLLLLL....
 ................`],
-  [ lava, bitmap`
+  [lava, bitmap`
 9999999999999999
 9933339933999999
 9333333933933333
@@ -309,7 +312,7 @@ C00000000000000C
 3339993333339999
 3333999333399999
 9999999999999999`],
-  [ regen_lava, bitmap`
+  [regen_lava, bitmap`
 9999999999999999
 9933339933999999
 9339333933933333
@@ -326,7 +329,7 @@ C00000000000000C
 3339993333339999
 3333999333399999
 9999999999999999`],
-  [ obsidian, bitmap`
+  [obsidian, bitmap`
 0000000000000000
 0000000000000000
 000H00000H000000
@@ -343,7 +346,7 @@ C00000000000000C
 000000H000000H00
 00000H000000H000
 0000000000000000`],
-  [ enemy_sword, bitmap`
+  [enemy, bitmap`
 ......99..33.99.
 .......99.33.9..
 .....LL00000LLL.
@@ -360,7 +363,7 @@ LH6L.L..444...L.
 ................
 ................
 ................` ],
-  [ trap, bitmap`
+  [trap, bitmap`
 6......1.......6
 .6......1.....6.
 .......1........
@@ -377,7 +380,7 @@ LH6L.L..444...L.
 ........1.......
 .6.....1......6.
 6.......1......6` ],
-  [ water, bitmap`
+  [water, bitmap`
 7777777777777777
 7777777777777777
 7775577777777777
@@ -394,7 +397,7 @@ LH6L.L..444...L.
 7777777777775577
 7777777777557777
 7777777777777777`],
-  [ smoke, bitmap`
+  [smoke, bitmap`
 ................
 ................
 .........LL.....
@@ -411,7 +414,7 @@ LH6L.L..444...L.
 .11......LL.....
 ................
 ................`],
-  [ plant, bitmap`
+  [plant, bitmap`
 ................
 ................
 .............33.
@@ -428,7 +431,7 @@ LH6L.L..444...L.
 ....D...........
 ................
 ................` ],
-  [ machine_water, bitmap`
+  [machine_water, bitmap`
 0..............0
 .00000000000000.
 .03333333333330.
@@ -445,7 +448,7 @@ LH6L.L..444...L.
 .03333333333330.
 .00000000000000.
 0..............0`],
-  [ machine_plant, bitmap`
+  [machine_plant, bitmap`
 0..............0
 .00000000000000.
 .04444444444440.
@@ -462,7 +465,7 @@ LH6L.L..444...L.
 .04444444444440.
 .00000000000000.
 0..............0`],
-  [ machine_gate, bitmap`
+  [machine_gate, bitmap`
 0000000000000000
 0777777777777770
 0..............0
@@ -479,7 +482,7 @@ LH6L.L..444...L.
 0..............0
 0777777777777770
 0000000000000000`],
-  [ gate, bitmap`
+  [gate, bitmap`
 L.L.L.L..L.L.L.L
 L.L.L.L..L.L.L.L
 L.L.L.L..L.L.L.L
@@ -496,7 +499,7 @@ L.L.L.L..L.L.L.L
 L.L.L.L..L.L.L.L
 L.L.L.L..L.L.L.L
 L.L.L.L..L.L.L.L`],
-  [ no, bitmap`
+  [no, bitmap`
 ................
 ................
 ................
@@ -513,7 +516,7 @@ L.L.L.L..L.L.L.L`],
 ................
 ................
 ................` ],
-  [ arrow_right, bitmap`
+  [arrow_right, bitmap`
 ................
 ................
 ................
@@ -530,7 +533,7 @@ L.L.L.L..L.L.L.L`],
 ................
 ................
 ................` ],
-  [ arrow_left, bitmap`
+  [arrow_left, bitmap`
 ................
 ................
 ................
@@ -547,7 +550,24 @@ L.L.L.L..L.L.L.L`],
 ................
 ................
 ................`],
-  [ arrow_right_enforcing, bitmap`
+  [arrow_up, bitmap`
+.......00.......
+......0000......
+.....000000.....
+....00000000....
+...0000000000...
+...0000000000...
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......
+.......00.......`],
+  [arrow_right_enforcing, bitmap`
 ................
 ................
 ................
@@ -564,7 +584,7 @@ L.L.L.L..L.L.L.L`],
 ................
 ................
 ................` ],
-  [ arrow_left_enforcing, bitmap`
+  [arrow_left_enforcing, bitmap`
 ................
 ................
 ................
@@ -581,7 +601,7 @@ L.L.L.L..L.L.L.L`],
 ................
 ................
 ................`],
-  [ confetti1, bitmap`
+  [confetti1, bitmap`
 ..6.............
 ......3....7....
 4..7..........4.
@@ -598,7 +618,7 @@ L.L.L.L..L.L.L.L`],
 ..4....8........
 ....7....4.6....
 .3...........7..`],
-  [ confetti2, bitmap`
+  [confetti2, bitmap`
 .3...........7..
 ....7....4.6....
 ..4....8........
@@ -615,7 +635,7 @@ L.L.L.L..L.L.L.L`],
 4..7..........4.
 ......3....7....
 ..6.............`],
-  [ confetti3, bitmap`
+  [confetti3, bitmap`
 ..4.........6...
 .......C.......3
 6...6.....7..4..
@@ -632,7 +652,7 @@ L.L.L.L..L.L.L.L`],
 ....H...4......7
 ..4...3...6.....
 ............C...`],
-  [ confetti4, bitmap`
+  [confetti4, bitmap`
 ..6.............
 ......3....7....
 4..7..........4.
@@ -649,7 +669,7 @@ L.L.L.L..L.L.L.L`],
 ..4....8........
 ....7....4.6....
 .3...........7..`],
-  [ confetti5, bitmap`
+  [confetti5, bitmap`
 .3...........7..
 ....7....4.4....
 ..6....6........
@@ -666,7 +686,7 @@ L.L.L.L..L.L.L.L`],
 4..7..........4.
 ......3....6....
 ..7.............`],
-  [ confetti6, bitmap`
+  [confetti6, bitmap`
 ............7...
 ..4...3...3.....
 ....H...4......7
@@ -683,7 +703,7 @@ L.L.L.L..L.L.L.L`],
 8...6.....7..6..
 .......C.......3
 ..4.........3...`],
-  [ message_background, bitmap`
+  [message_background, bitmap`
 3333333333333333
 3333333333333333
 3333333333333333
@@ -700,7 +720,7 @@ L.L.L.L..L.L.L.L`],
 3333333333333333
 3333333333333333
 3333333333333333`],
-  [ book, bitmap`
+  [book, bitmap`
 ................
 ...CCCCCCCCCC...
 ...C1111CCCCC...
@@ -717,7 +737,7 @@ L.L.L.L..L.L.L.L`],
 ...CCCC11111C...
 ...CCCCCCCCCC...
 ................`],
-  [ altar, bitmap`
+  [altar, bitmap`
 00............00
 0LLLLLLLLLLLLLL0
 .L222222222222L.
@@ -908,324 +928,157 @@ const playerBitmaps = {
 ................`
 }
 setLegend(
-  [ player, playerBitmap],
+  [player, playerBitmap],
   ...sprites
 )
-const destructibles = [rocks,crate,plant]
+
+// Map and movement
+const destructibles = [rocks, crate, plant]
 
 const start_map = map`
-........................................................................
-........................................................................
-....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh....
-....h........w.......wwwwwwwwww....t.eeee.t.eeeeeeee.t...w.........h....
-....h........wwwwwwwwwr......nw.w..wwwwwwwwwwwwwwwwwwwww.w.hhhhhhh.h....
-....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h....
-....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h....
-....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h....
-....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h....
-....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h....
-....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h....
-....hhhhhhhhhh.w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h....
-....haaaaaaaah.wwwww.wwwlw.w.w3w.wn.w.ww.w.w.s..ls.se..t.w.hhh.hhh.h....
-....haaaaaaaah.......wlllw.w.wwwwwwww.ww.w.ww.rsls..e.7w.w...h.h...h....
-....hahhhaaaah.......wllww.ww........nw..w...e..ll.reo.www...hch...h....
-....hah8hooooh.......wllw...ww.wwwwwwwwccw.s.ewcsl..wwww..hhhh6h...h....
-....hah.....sh......wwllw......w.....Hw..w....w..l..w...hhh.g..h...h....
-....hahnhghh.h..wwwww...w..nwwww..w...w..wwwwwwwwwwww.hhh...f.ah...h....
-....hah.hf.h.h..w.......wn..........wwn..r4r..w......hh.....g.ah...h....
-....hahnh..h.h..w...rr..w...wwwwwwrw.wwwwwww..w......hwwwwwwwhhh...h....
-....hah.h..h.h..w...5r..w.....rw..w..w.....w..w......heeeeeeeh.....h....
-....hahnh..h.h..w.......w...wr......w......w..w.......heeeeeh......h....
-....hahbh..h.h..wwwwwwwwwwwwwwwwwww.wwwwwwwwccwhhhhhhhheeeeehhhhhhhh....
-....hah.h..h.h....................w..oooooo..cw.......hh...hh......h....
-....hah.haah.h....................wwwwwwwwwwwww........hrrrh.......h....
-....hah.hashhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...h.......h....
-....hah.haah........g..b....j...kk.....s..eeee...g...t.....h.....H.h....
-....hah.haah........f.ewhhhhhhhhhhhhhhhhhhhhhhh..f..btd..s.h.......h....
-....hah.h..h.....n.ng.ew........xnaaaaaaaaa.c....g...t.....h.......h....
-....hah.h..h.ccc.n.nf.ew.hhhhhhhhhhhhhhwhhhbhahhhwhhhhhhhhhh.......h....
-....hah.h..h.csc.n.ng.ew.h.g....xlll..hlhlhhh..lh.h........u....aaah....
-....hahjh..h.ccc.n.nf.ew...f....xl8l..h.hl...s.lhjh....I..jj....a8ah....
-....hahjh..h........g.ew.h.g....xlll..h.hlllllllh.h........u....aaah....
-....hahjh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.hhhhhhhhhhhhhhoooh....
-....hah.h..h........g.ew..aaaa.......g..dgeeek...nhhh.h.h.h.g.t.lllh....
-....hah.h..hwhhhhhhhhhhhhhhhhh....s..f...feeehhhhhhhhshshsh.f.t.lslh....
-....hah.hh...u...c...........q.......g.b.geee......k......H.g.tflllh....
-....hhhf.hhhhwhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhghhhh....
-......hg.........unaaaaaaaaaaaaaa.Htt.eeeeeeeeeeeeeeeeeeeee.....h.......
-......hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.......
-........................................................................
-........................................................................
-........................................................................`
-let rowMap = start_map.split("\n").slice(1)
+.......................................................................
+.......................................................................
+....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...
+....h........w.......wwwwwwwwww....t.eeee.t.eeeeeeee.t...w.........h...
+....h........wwwwwwwwwr......nw.w..wwwwwwwwwwwwwwwwwwwww.w.hhhhhhh.h...
+....h................rr.........wwweeer..t.....waaaaaaaw.w..aaaaah.h...
+....h........wwww.wwwwr.......w....oeerr.t..s.2wanaaanaw.w.haaaaah.h...
+....h........w..w.w..wwwcwrw.www.ww.eerr.t.....waaaaaaaw.w.haaaaah.h...
+....h........w.ww.ww...w.wcw.w.w.w.wwwwwwwwwwwwwwwwwwnawnw.haaaaah.h...
+....hwwwwwwwww.w...w...w.w.w.w.w.c.........w..ll....waaw.w.haaaaah.h...
+....h..........w.1.w...w.w.w.w.w.w..wwwwww.w...ll...wwww.w.haaaaah.h...
+....hhhhhhhhhh.w...w...wlw.w.www.w..ww...w.w.c..ls.se..w.w.haaaaah.h...
+....haaaaaaaah.wwwww.wwwlw.w.w3w.wn.w.ww.w.w.s..ls.se..t.w.hhh.hhh.h...
+....haaaaaaaah.......wlllw.w.wwwwwwww.ww.w.ww.rsls..e.7w.w...h.h...h...
+....hahhhaaaah.......wllww.ww........nw..w...e..ll.reo.www...hch...h...
+....hah8haaaah.......wllw...ww.wwwwwwwwccw.s.ewcsl..wwww..hhhh6h...h...
+....hah.....sh......wwllw......w.....Hw..w....w..l..w...hhh.g..h...h...
+....hahnhghh.h..wwwww...w..nwwww..w...w..wwwwwwwwwwww.hhh...f.jh...h...
+....hahjhf.h.h..w.......wn..........wwn..r4r..w......hh.....g.ah...h...
+....hahlh..h.h..w...rr..w...wwwwwwrw.wwwwwww..w......hwwwwwwwhhh...h...
+....hahlh..h.h..w...5r..w.....rw..w..w.....w..w......heeeeeeeh.....h...
+....hahlh..h.h..w.......w...wr......w......w..w.......heeeeeh......h...
+....hahlh..h.h..wwwwwwwwwwwwwwwwwww.wwwwwwwwccwhhhhhhhheeeeehhhhhhhh...
+....hahlh..h.h....................w..oooooo..cw.......hh...hh......h...
+....hahlhaah.h....................wwwwwwwwwwwww........hrrrh.......h...
+....hahlhashhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh...h.......h...
+....hahlhash........g..b....j...kk.....s..eeee...g...t.....h.....H.h...
+....hahlhaah........f.ewhhhhhhhhhhhhhhhhhhhhhhh..f..btd..s.h.......h...
+....hahlhaah.....n.ng.ew........xnaaaaaaaaa.c....g...t.....h.......h...
+....hahlh..h.ccc.n.nf.ew.hhhhhhhhhhhhhhwhhhbhahhhwhhhhhhhhhh.....v.h...
+....hahlh..h.csc.n.ng.ew.h.g...x.lll..hlhlhhh..lh.h........u....aaah...
+....hahlh..h.ccc.n.nf.ew...f...x.l8l..h.hl...s.lhjh....I..jj....a8ah...
+....hahlh..h........g.ew.h.g...x.lll..h.hlllllllh.h........u....aaah...
+....hahlh..h.....n.nf.ew.hhhhhhhhhhhhhh.hhhhhhhhh.hhhhhhhhhhhhhhoooh...
+....hahlh..h........g.ew..aaaa.......g..dgeeek...nhhh.h.h.h.g.t.lllh...
+....hahlh..hwhhhhhhhhhhhhhhhhh....s..f...feeehhhhhhhhshshsh.f.t.lslh...
+....hahlhh...u...c...........q.......g.b.geees.....k......H.g.t.lllh...
+....hahlshhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh.hhhhhhhhhhhhhhhhhh...
+....hanluaaaaaaaaaaaaa...H..t..eeeeeeeeeeeeeee....raaaaaaaaaaaq.h......
+....hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh......
+.......................................................................
+.......................................................................
+.......................................................................`
+let rowMap = start_map.trim().split("\n")
 
-const playerPos = {x:8,y:5}
-const localPlayerPos = {x:4,y:3}
-let lastMove = {x:0,y:0}
+const playerPos = { x: 8, y: 5 }
+const localPlayerPos = { x: 4, y: 3 }
+let move = { x: 0, y: 0 }
 
-function redrawMap(){
-  const {x,y} = playerPos
-  const currentMap = rowMap.slice(y-3,y+5).map(row=>row.slice(x-4,x+6))
+function redrawMap() {
+  const { x, y } = playerPos
+  const currentMap = rowMap.slice(y - 3, y + 5).map(row => row.slice(x - 4, x + 6))
   setMap(currentMap.join("\n"))
-  addSprite(localPlayerPos.x,localPlayerPos.y,player)
+  addSprite(localPlayerPos.x, localPlayerPos.y, player)
 }
-function editMap(x,y,sprite){
+function editMap(x, y, sprite) {
   rowMap[y] = rowMap[y].substring(0, x) + sprite + rowMap[y].substring(x + 1)
 }
-function tileIs(tile,sprite){
-  if(tile.length==1 && tile[0]._type==sprite) return true
-  else if(tile.length==2){
-    const t1 = tile[0]._type, t2 = tile[1]._type
-    return (t1==player&&t2==sprite) || (t1==sprite&&t2==player)
-  }
+function tileIs(tile, sprite) {
+  return tile.some(s => s.type == sprite)
 }
 
-const ghostSolids = [hard_wall,enemy_sword,machine_water,machine_plant,machine_gate,gate]
-const solids = [...ghostSolids,wall,rocks,crate]
-function moveOrCollide(movementX,movementY){
-  const nextTile = getTile(localPlayerPos.x+movementX,localPlayerPos.y+movementY)
-  if(
-     nextTile.some((sprite)=>(collectedOrbs[selectedOrb] == 2 ? ghostSolids : solids).includes(sprite._type))
+const ghostSolids = [hard_wall, enemy, machine_water, machine_plant, machine_gate, gate]
+const solids = [...ghostSolids, wall, rocks, crate]
+function moveOrCollide(movementX, movementY) {
+  const nextTile = getTile(localPlayerPos.x + movementX, localPlayerPos.y + movementY)
+  if (
+    nextTile.some((sprite) => (collectedOrbs[selectedOrb] == 2 ? ghostSolids : solids).includes(sprite.type))
   ) return
+  
+  // Enforcing arrow functionality
+  if (tileIs(nextTile, arrow_right_enforcing) && movementX == -1) {
+    return
+  }
+  if (tileIs(nextTile, arrow_left_enforcing) && movementY == +1) {
+    return
+  }
+    
   else {
     playerPos.x += movementX
     playerPos.y += movementY
-    lastMove = {x:movementX,y:movementY}
+    move = { x: movementX, y: movementY }
   }
 }
-redrawMap()
-let freezed = false
-onInput("s", () => {
-  if(freezed) return;
-  moveOrCollide(0,1)
-})
-onInput("w", () => {
-  if(freezed) return;
-  moveOrCollide(0,-1)
-})
-onInput("a", () => {
-  if(freezed) return;
-  moveOrCollide(-1,0)
-})
-onInput("d", () => {
-  if(freezed) return;
-  moveOrCollide(1,0)
-})
 
+// Orbs
+const orbMessages = [
+  [" The earth trembles", "", "  with your power!"],
+  ["    Ghostly power", "  has been granted", "       to you"],
+  ["     You feel...", "", "        Fiery"],
+  ["       Splash", "", "       Sploosh"],
+  ["   Where are you?"],
+  [" Electricity flows", "", "    through you!"],
+  ["        WHAT?", "", "    I'm a plant?"],
+  ["", "Is this true POWER??", "", "      Gwc apitt", "    jm kwzzcxbml!"],
+  ["", "", "   So much POWER!!", "", "", "     Erfvfg gur", "     pbeehcgvba!"]
+]
 let collectedOrbs = []
 let selectedOrb = null;
-
-function orbText(){
-  addText(orb_names[collectedOrbs[selectedOrb]-1]+" Orb",{ 
-    x: 0,
-    y: 0,
-    color: color`3`
-  })
-}
-function selectOrb(orb){
-  prevOrb = selectedOrb
+function selectOrb(orb) {
   selectedOrb = orb
-  clearText()
-  orbText()
-  setLegend([ player, playerBitmaps[collectedOrbs[orb]] ],...sprites)
+  statusText()
+  setLegend([player, playerBitmaps[collectedOrbs[orb]]], ...sprites)
 }
 
-const books = [
-  {x:37,y:16,message:["   Why do you seek","        power?"],multiple:true,time:2000},
-  {x:34,y:38,message:["   What brings you","   to these depths?"],multiple:true,time:2000},
-  {x:58,y:36,message:[" Have you come here", "     for POWER?","", " Are you sure this", " is your true goal?", "  Do not let GREED", "    consume you","", "Cbjre pbeehcgf.","", "Or pnershy"],multiple:true,time:7000},
-  {x:65,y:26,message:["    Have you been", "    corrupted by", "      the ORB?","","    Or were you", " corrupted anyways?","", "      Aikzqnqkm", "     gwcz xwemz!"],multiple:true,time:7000}
-]
-
-const orbMessages = [
-  [" The earth trembles","","  with your power!"],
-  ["The power of ghosts","","  has been granted","       to you"],
-  ["     You feel...","","        Fiery"],
-  ["       Splash","","       Sploosh"],
-  ["   Where are you?"],
-  [" Electricity flows","","    through you!"],
-  ["        WHAT?","","    I'm a plant?"],
-  ["","Is this true POWER??","","      Gwc apitt","    jm kwzzcxbml!"],
-  ["","","   So much POWER!!","","","     Erfvfg gur","     pbeehcgvba!"]
-]
-
-let kcount = 0
-let timers = []
-let breath = 5
-afterInput(() => {
-  if(freezed) return;
-  if(kcount>0) kcount--;
-  const nextTile = getTile(localPlayerPos.x+lastMove.x,localPlayerPos.y+lastMove.y)
-
-  //Proccess timers
-  const newTimers = []
-  timers.forEach(timer=>{
-    timer.remaining--;
-    if(timer.remaining==0) editMap(timer.x,timer.y,timer.after)
-    else newTimers.push(timer)
-  })
-  timers = newTimers
-
-  //Collect orb
-  const orb = nextTile.find(sprite=>parseInt(sprite._type)<=8)
-  if(orb) {
-    collectedOrbs.push(parseInt(orb._type))
-    editMap(playerPos.x,playerPos.y,".")
-    selectOrb(collectedOrbs.length-1)
-    if(collectedOrbs.length == 9){
-      message(orbMessages[8],true,2000)
-      return
-    }
-    
-    message(orbMessages[orb._type-1],true,2000)
-    return;
-  }
-
-  //Display book
-  const isBook = tileIs(nextTile,book)
-  if(isBook) {
-    const book = books.find(({x,y})=>x==playerPos.x&&y==playerPos.y)
-    message(book.message, book.multiple, book.time)
-    return;
-  }
-
-  // Lava functionality
-  let isLava = tileIs(nextTile,lava);
-  let isRegenLava = tileIs(nextTile,regen_lava);
-  
-  if((isLava || isRegenLava) && collectedOrbs[selectedOrb] == 4){
-    editMap(playerPos.x,playerPos.y,obsidian)
-    if(isRegenLava) timers.push({x:playerPos.x,y:playerPos.y,remaining:6,after:regen_lava})
-  }
-  else if(isLava || isRegenLava){
-    die("lava")
-    return
-  }
-  
-  // Enforcing arrow functionality
-  if(tileIs(nextTile,arrow_right_enforcing) && lastMove.x == -1){
-    playerPos.x += 1
-    redrawMap()
-    return
-  }
-  if(tileIs(nextTile,arrow_left_enforcing) && lastMove.x == +1){
-    playerPos.x -= 1
-    redrawMap()
-    return
-  }
-
-  // Die from enemies
-  if(collectedOrbs[selectedOrb] != 5){
-    for(let x = -1; x <= 1; x++){
-        for(let y = -1; y <= 1; y++){
-          const tile = getTile(localPlayerPos.x+lastMove.x+x,localPlayerPos.y+lastMove.y+y)
-          if(tileIs(tile,enemy_sword)) {
-            die("Enemy")
-            return
-          }
-       }
-    }    
-  }
-
-  // Die from traps
-  const isTrap = tileIs(nextTile,trap)
-  if(isTrap && collectedOrbs[selectedOrb] != 7){
-    die("Player trap")
-    return
-  }
-
-  // Burn plants
-  const isPlant = tileIs(nextTile,plant);
-  if(isPlant && collectedOrbs[selectedOrb] == 3){
-    editMap(playerPos.x,playerPos.y,smoke)
-    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
-  }
-
-  // Water and breathing functionality
-  let inWater = tileIs(nextTile,water);
-  if(inWater && collectedOrbs[selectedOrb] == 3){
-    editMap(playerPos.x,playerPos.y,smoke)
-    timers.push({x:playerPos.x,y:playerPos.y,remaining:2,after:"."})
-  }
-  else if(inWater && collectedOrbs[selectedOrb] == 6){
+const machines = [{
+  name: machine_water, action: (x, y) => {
+    editMap(playerPos.x, playerPos.y, water)
     die("Electricity")
-    return
   }
-  else if(inWater && collectedOrbs[selectedOrb] != 8){
-    breath--;
-    clearText()
-    addText("Breath: "+"O".repeat(breath),{x:0,y:2,color:color`5`})
-    if(selectedOrb!=null) orbText()
+}, {
+  name: machine_plant, action: (x, y) => {
+    editMap(playerPos.x, playerPos.y, plant)
   }
-  else if(breath<5) {
-    breath = 5
-    clearText()
-    if(selectedOrb!=null) orbText()
+}, {
+  name: machine_gate, action: (x, y) => {
+    editMap(x, y, smoke)
+    editMap(x, y + 1, ".")
+    editMap(x, y - 1, ".")
+    timers.push({ x, y, remaining: 3, after: "." })
   }
-  if(breath == 0){
-    die("Suffocation")
-    return
-  }
-
-  if(tileIs(nextTile,altar)){
-    message(["      The altar","","      destroys","","      all power"],true,2000)
-    editMap(playerPos.x,playerPos.y,".")
-    collectedOrbs = []
-    selectedOrb = null
-    setLegend([ player, playerBitmaps[9] ],...sprites)
-    setTimeout(()=>{
-      win(true)
-    },3000)
-    return
-  }
-  
-  redrawMap()
-  lastMove = {x:0,y:0}
-})
-onInput("k",()=>{
-  if(kcount == 1 || freezed) restartGame()
-  kcount = 2
-})
-onInput("l",()=>{
-  if(freezed || collectedOrbs.length == 0) return;
-  selectOrb((selectedOrb+1)%collectedOrbs.length)
-})
-onInput("j",()=>{
-  if(freezed || collectedOrbs.length == 0) return;
-  selectOrb((selectedOrb-1+collectedOrbs.length)%collectedOrbs.length)
-})
-machines = [{name:machine_water,action:(x,y)=>{
-  editMap(playerPos.x,playerPos.y,water)
-  die("Electricity")
-}},{name:machine_plant,action:(x,y)=>{
-  editMap(playerPos.x,playerPos.y,plant)
-}},{name:machine_gate,action:(x,y)=>{
-  editMap(x,y,smoke)
-  editMap(x,y+1,".")
-  editMap(x,y-1,".")
-  timers.push({x,y,remaining:3,after:"."})
-}}]
-
-function useOrb(orb){
-  switch(orb){
+}]
+function useOrb(orb) {
+  switch (orb) {
     case 1:
-      for(let x = -1; x <= 1; x++){
-        for(let y = -1; y <= 1; y++){
-          const sprites = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
-          if(sprites.length == 1 && destructibles.includes(sprites[0]._type)) {
-            editMap(playerPos.x+x,playerPos.y+y,".")
+      for (let x = -1; x <= 1; x++) {
+        for (let y = -1; y <= 1; y++) {
+          const sprites = getTile(localPlayerPos.x + x, localPlayerPos.y + y)
+          if (sprites.length == 1 && destructibles.includes(sprites[0]._type)) {
+            editMap(playerPos.x + x, playerPos.y + y, ".")
           }
         }
       }
       break;
     case 4:
-      editMap(playerPos.x,playerPos.y,water)
+      editMap(playerPos.x, playerPos.y, water)
       break;
     case 6:
-      const offsets = [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1}]
-      offsets.forEach(({x,y})=>{
-        const tile = getTile(localPlayerPos.x+x,localPlayerPos.y+y)
-        machines.find((m)=>m.name==tile.at(0)?._type)?.action(playerPos.x+x,playerPos.y+y)
+      const offsets = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }]
+      offsets.forEach(({ x, y }) => {
+        const tile = getTile(localPlayerPos.x + x, localPlayerPos.y + y)
+        const machine = machines.find((m) => (m.name == (tile.at(0) ?? {})._type))
+        if (machine) machine.action(playerPos.x + x, playerPos.y + y)
       })
       break;
     case 8:
@@ -1233,54 +1086,69 @@ function useOrb(orb){
       break;
   }
 }
-onInput("i",()=>{
-  if(freezed || collectedOrbs.length == 0) return;
-  useOrb(collectedOrbs[selectedOrb])
-})
 
-function message(text, multiple, time){
+// Books
+const books = [
+  { x: 37, y: 16, message: ["   Why do you seek", "        power?"], time: 2000 },
+  { x: 25, y: 38, message: ["   What brings you", "   to these depths?"], time: 2000 },
+  { x: 58, y: 36, message: [" Have you come here", "     for POWER?", "", " Are you sure this", " is your true goal?", "  Do not let greed", "    consume you", "", "Cbjre pbeehcgf.", "", "Or pnershy"], time: 7000 },
+  { x: 65, y: 26, message: ["    Have you been", "    corrupted by", "      the ORB?", "", "    Or were you", " corrupted anyways?", "", "      Aikzqnqkm", "     gwcz xwemz!"], time: 7000 }
+]
+
+
+function statusText() {
+  clearText()
+  if (selectedOrb != null) addText(orb_names[collectedOrbs[selectedOrb] - 1] + " Orb", {
+    x: 0,
+    y: 0,
+    color: color`3`
+  })
+  if (breath < 5 && collectedOrbs[selectedOrb] != 8) addText("Breath: " + "O".repeat(breath), { x: 0, y: 2, color: color`5` })
+}
+function message(text, time) {
   clearText()
   freezed = true
   setMap(map`
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG
-GGGGGGGGGGGGGGG`)
-  setBackground(message_background)
-  if(!multiple) addText(text,{y:4,x:0,color:color`5`})
-  else{
-    text.forEach((t,i)=>addText(t,{x:0,color:color`5`,y:5-Math.floor(text.length/2)+i+1}))
-  }
-  if(time!=-1) {
-    setTimeout(()=>{
-      setBackground()
-      redrawMap()
-      clearText()
-      orbText()
-      freezed = false
-    },time)
-  }
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG`)
+  text.forEach((t, i) => addText(t, { x: 0, color: color`5`, y: 5 - Math.floor(text.length / 2) + i + 1 }))
+  setTimeout(() => {
+    redrawMap()
+    statusText()
+    freezed = false
+  }, time)
 }
-function die(cause){
+
+
+function die(cause) {
   redrawMap()
-  if(collectedOrbs[selectedOrb]==8 && cause != "Greed") return
-  addText("You died",{y:4,x:8,color:color`3`})
-  addText("From: "+cause,{y:5,x:0,color:color`5`})
+  if (collectedOrbs[selectedOrb] == 8) return
+  addText("You died", { y: 4, x: 8, color: color`3` })
+  addText("From: " + cause, { y: 5, x: 0, color: color`5` })
   freezed = true
 }
 let winInterval = null
-function win(real){
-  if(collectedOrbs.length == 9){
-    die("Greed")
-    message("You died from greed",false,-1)
+function win(real) {
+  if (collectedOrbs.length == 9) {
+    clearText()
+    freezed = true
+    setMap(map`
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG
+GGGGGGGGGG`)
+    addText("You died", { y: 5, x: 6, color: color`5` })
+    addText("From: Greed", { y: 8, x: 5, color: color`5` })
     return
   }
   const winMap = map`
@@ -1290,34 +1158,34 @@ BCADE
 DFBFA`
   const winMaps = [winMap]
   let mapI = 0
-  for(let i=1;i<6;i++){
-    winMaps[i] = winMaps[i-1].replace(/[ABCDEF]/g,m=>{
-      let nextC = m.charCodeAt(0)+1
-      if(nextC==71) nextC = 65
+  for (let i = 1; i < 6; i++) {
+    winMaps[i] = winMaps[i - 1].replace(/[ABCDEF]/g, m => {
+      let nextC = m.charCodeAt(0) + 1
+      if (nextC == 71) nextC = 65
       return String.fromCharCode(nextC)
     })
   }
   clearText()
   setMap(winMaps[0])
   freezed = true
-  if(!real){
-    addText("You won?",{x:0,y:1,color:color`6`})
-    addText("You won?",{x:12,y:1,color:color`6`})
-    addText("Is this what ",{x:5,y:5,color:color`5`})
-    addText("you wanted?",{x:5,y:6,color:color`5`})
+  if (!real) {
+    addText("You won?", { x: 0, y: 1, color: color`6` })
+    addText("You won?", { x: 12, y: 1, color: color`6` })
+    addText("Is this what ", { x: 5, y: 5, color: color`5` })
+    addText("you wanted?", { x: 5, y: 6, color: color`5` })
   } else {
-    addText("You won!",{x:0,y:1,color:color`6`})
-    addText("You won!",{x:12,y:1,color:color`6`})
-    addText("Thank you for",{x:4,y:5,color:color`5`})
-    addText("playing!",{x:7,y:6,color:color`5`})
+    addText("You won!", { x: 0, y: 1, color: color`6` })
+    addText("You won!", { x: 12, y: 1, color: color`6` })
+    addText("Thank you for", { x: 4, y: 5, color: color`5` })
+    addText("playing!", { x: 7, y: 6, color: color`5` })
   }
-  winInterval = setInterval(()=>{
+  winInterval = setInterval(() => {
     setMap(winMaps[mapI])
     mapI = (mapI + 1) % 6;
-  },100)
+  }, 100)
 }
-function restartGame(){
-  rowMap = start_map.split("\n").slice(1)
+function restartGame() {
+  rowMap = start_map.trim().split("\n")
   collectedOrbs = []
   selectedOrb = null;
   playerPos.x = 8; playerPos.y = 5;
@@ -1327,7 +1195,175 @@ function restartGame(){
   timers = []
   breath = 5
   clearInterval(winInterval)
-  setBackground()
-  setLegend([ player, playerBitmap],...sprites)
+  setLegend([player, playerBitmap], ...sprites)
+  setMap(map`
+..........
+..........
+..........
+..........
+..........
+..........
+..........
+..........`)
   redrawMap()
 }
+
+// Input
+let freezed = false, kcount = 0
+onInput("s", () => {
+  if (freezed) return;
+  moveOrCollide(0, 1)
+})
+onInput("w", () => {
+  if (freezed) return;
+  moveOrCollide(0, -1)
+})
+onInput("a", () => {
+  if (freezed) return;
+  moveOrCollide(-1, 0)
+})
+onInput("d", () => {
+  if (freezed) return;
+  moveOrCollide(1, 0)
+})
+onInput("k", () => {
+  if (kcount == 1 || freezed) restartGame()
+  kcount = 2
+})
+onInput("i", () => {
+  if (freezed || collectedOrbs.length == 0) return;
+  useOrb(collectedOrbs[selectedOrb])
+})
+onInput("l", () => {
+  if (freezed || collectedOrbs.length == 0) return;
+  selectOrb((selectedOrb + 1) % collectedOrbs.length)
+})
+onInput("j", () => {
+  if (freezed || collectedOrbs.length == 0) return;
+  selectOrb((selectedOrb - 1 + collectedOrbs.length) % collectedOrbs.length)
+})
+
+let timers = []
+let breath = 5
+afterInput(() => {
+  if (freezed) return;
+  if (kcount > 0) kcount--;
+  let nextTile = getTile(localPlayerPos.x + move.x, localPlayerPos.y + move.y)
+  let nextPos = {x: localPlayerPos.x + move.x, y: localPlayerPos.y + move.y}
+  move = {x: 0, y: 0}
+
+  //Proccess timers
+  timers = timers.filter(timer => {
+    timer.remaining--;
+    if (timer.remaining == 0) {
+      editMap(timer.x, timer.y, timer.after)
+      if(playerPos.x == timer.x && playerPos.y == timer.y) nextTile = [{type: timer.after, x: nextTile.x, y: nextTile.y}]
+      return false
+    }
+    return true
+  })
+
+  //Collect orb
+  const orb = nextTile.find(sprite => parseInt(sprite.type) <= 8)
+  if (orb) {
+    collectedOrbs.push(parseInt(orb.type))
+    editMap(playerPos.x, playerPos.y, ".")
+
+    selectOrb(collectedOrbs.length - 1)
+    if (collectedOrbs.length == 9) {
+      message(orbMessages[8], 2000)
+    } else {
+      message(orbMessages[orb.type - 1], 1700)
+    }
+    return
+  }
+
+  //Display book
+  const isBook = tileIs(nextTile, book)
+  if (isBook) {
+    const book = books.find(({ x, y }) => x == playerPos.x && y == playerPos.y)
+    message(book.message, book.time)
+    return;
+  }
+
+  // Lava functionality
+  let isRegenLava = tileIs(nextTile, regen_lava);
+  let isLava = tileIs(nextTile, lava) || isRegenLava;
+
+  if (isLava && collectedOrbs[selectedOrb] == 4) {
+    editMap(playerPos.x, playerPos.y, obsidian)
+    if (isRegenLava) timers.push({ x: playerPos.x, y: playerPos.y, remaining: 4, after: regen_lava })
+  }
+  else if (isLava) {
+    die("Lava")
+    return
+  }
+
+  // Die from enemies
+  if (collectedOrbs[selectedOrb] != 5) {
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        const tile = getTile(nextPos.x + x, nextPos.y + y)
+        if (tileIs(tile, enemy)) {
+          die("Enemy")
+          return
+        }
+      }
+    }
+  }
+
+  // Die from traps
+  const isTrap = tileIs(nextTile, trap)
+  if (isTrap && collectedOrbs[selectedOrb] != 7) {
+    die("Player trap")
+    return
+  }
+
+  // Burn plants
+  const isPlant = tileIs(nextTile, plant);
+  if (isPlant && collectedOrbs[selectedOrb] == 3) {
+    editMap(playerPos.x, playerPos.y, smoke)
+    timers.push({ x: playerPos.x, y: playerPos.y, remaining: 2, after: "." })
+  }
+
+  // Water and breathing functionality
+  let inWater = tileIs(nextTile, water);
+  if (inWater && collectedOrbs[selectedOrb] == 3) {
+    editMap(playerPos.x, playerPos.y, smoke)
+    timers.push({ x: playerPos.x, y: playerPos.y, remaining: 2, after: "." })
+  }
+  else if (inWater && collectedOrbs[selectedOrb] == 6) {
+    die("Electricity")
+    return
+  }
+  else if (inWater && collectedOrbs[selectedOrb] != 8) {
+    breath--;
+    statusText()
+  }
+  else if (breath < 5) {
+    breath = 5
+    statusText()
+  }
+  if (breath == 0) {
+    die("Suffocation")
+    return
+  }
+
+  // Altar
+  if (tileIs(nextTile, altar)) {
+    message(["      The altar", "", "      destroys", "", "      all power"], 2000)
+    editMap(playerPos.x, playerPos.y, ".")
+    collectedOrbs = []
+    selectedOrb = null
+    setLegend([player, playerBitmaps[9]], ...sprites)
+    setTimeout(() => {
+      win(true)
+    }, 3000)
+    return
+  }
+
+  redrawMap()
+})
+
+
+restartGame()
